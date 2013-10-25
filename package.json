@@ -1,0 +1,19 @@
+{
+  "name": "sincemonday",
+  "preferGlobal": true,
+  "version": "0.2.0",
+  "author": "@kasuparu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kasuparu/sincemonday.js"
+  },
+  "dependencies": {
+    "foreman": "0.0.25",
+    "express": "3.4.x",
+    "everyauth": "~0.4.5"
+  },
+  "license": "GPLv3",
+  "engines": {
+    "node": ">=0.8"
+  }
+}
