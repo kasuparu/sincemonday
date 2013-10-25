@@ -3,14 +3,16 @@ var express = require('express'),
     app = express(),
 	env = process.env.NODE_ENV || 'dev',
 	cfg = require('./config.' + env),
-	everyauth = require('everyauth');
+	everyauth = require('everyauth'),
+	MongoStore = require('connect-mongo')(express),
+	MongoClient = require('mongodb').MongoClient;
 
 // Everyauth config
 everyauth.debug = env == 'dev';
 
 var usersById = {};
 var nextUserId = 0;
-usersByTwitId = {};
+var usersByTwitId = {};
 var usersByLogin = {
   'test@example.com': addUser({ login: 'test@example.com', password: 'password'})
 };
@@ -20,6 +22,7 @@ everyauth
 		.consumerKey(cfg.twit.consumerKey)
 		.consumerSecret(cfg.twit.consumerSecret)
 		.findOrCreateUser( function (sess, accessToken, accessSecret, twitUser) {
+			// TODO: get user from db or insert it
 			return usersByTwitId[twitUser.id] || (usersByTwitId[twitUser.id] = addUser('twitter', twitUser));
 		})
 		.entryPath('/auth/twitter')
@@ -44,22 +47,37 @@ function addUser (source, sourceUser) {
 	return user;
 }
 
-var usersByLogin = {
-  'brian@example.com': addUser({ login: 'brian@example.com', password: 'password'})
-};
-
 // App run
 app.use(express.logger())
-	.use(express.static(__dirname + '/static'))
 	.use(express.favicon())
 	.use(express.bodyParser())
-	.use(express.cookieParser('sincemonday'))
-	.use(express.session())
-	.use(everyauth.middleware())
-	.use(app.router);
+	.use(express.cookieParser(cfg.session.secret))
+	.use(express.session({
+		store: new MongoStore({
+			url: cfg.mongo.uri + '/' + cfg.mongo.db,
+			auto_reconnect: true,
+			maxAge: 360*24*60*60*1000
+		}),
+		secret: cfg.session.secret,
+		/*cookie: { 
+			secure: true,
+			maxAge: 360*24*60*60*1000,
+		}*/
+		// Uncomment = session reset each time
+	}))
+	.use(everyauth.middleware(app))
+	.use(app.router)
+	.use(express.csrf())
+	.use(express.static(__dirname + '/static'));
+	
+app.enable('trust proxy');
 
 app.get('/', function(req, res) {
-    res.send('Hello World, ' + req.user);
+	var previous      = req.session.value || 0;
+	req.session.value = previous + 1;
+	//req.session.cookie.maxAge = 360*24*60*60*1000;
+    res.send('Hello, ' + JSON.stringify(req.user) + ' ' + JSON.stringify(req.cookies) + ' counter=' + previous + ' expires in: ' + (req.session.cookie.maxAge / 1000));
+	
 });
 
 app.listen(cfg.httpPort);
