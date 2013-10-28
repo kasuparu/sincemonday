@@ -34,7 +34,7 @@ everyauth
 
 everyauth.everymodule
 	.findUserById( function (id, callback) {
-		console.log('everyauth called findUserById');
+		console.log('everyauth called findUserById=' + id);
 		// TODO: really find the user
 		callback(null, usersById[id]);
 	});
