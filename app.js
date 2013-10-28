@@ -7,7 +7,8 @@ var express = require('express'),
 	MongoStore = require('connect-mongo')(express),
 	MongoClient = require('mongodb').MongoClient,
 	sessionCookieName = 'connect.sid',
-	sessionCookieOptions = {maxAge: 360*24*60*60*1000, signed: true, httpOnly: true};
+	sessionCookieOptions = {maxAge: 360*24*60*60*1000, signed: true, httpOnly: true},
+	User = require('./classes/user');
 
 // Everyauth config
 everyauth.debug = env == 'dev';
@@ -35,22 +36,11 @@ everyauth
 everyauth.everymodule
 	.findUserById( function (id, callback) {
 		console.log('everyauth called findUserById');
-		// TODO: really find the user
-		callback(null, usersById[id]);
+		callback(null, User.findById(id));
 	});
 	
-function addUser (source, sourceUser) {
-	var user;
-	if (arguments.length === 1) { // password-based
-		user = sourceUser = source;
-		user.id = ++nextUserId;
-		return usersById[nextUserId] = user;
-	} else { // non-password-based
-		user = usersById[++nextUserId] = {id: nextUserId};
-		user[source] = sourceUser;
-	}
-	console.log('everyauth called addUser');
-	return user;
+function addUser(source, sourceUser) {
+	return User.add(source, sourceUser);
 }
 
 // App run
