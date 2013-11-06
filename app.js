@@ -79,6 +79,21 @@ app.get('/', function(req, res) {
 	
 });
 
+app.get('/db', function(req, res) {
+    console.log('mongodb://' + cfg.mongo.uri + '/' + cfg.mongo.db);
+    MongoClient.connect('mongodb://' + cfg.mongo.uri + '/' + cfg.mongo.db, function(err, db){
+		if(err) throw err;
+		db.collection('users').findOne(function(err, user){
+			if(err) throw err;
+			res.send(JSON.stringify(user));
+			db.close();
+		});
+    });
+    
+    
+	
+});
+
 app.listen(cfg.httpPort);
 console.log('Express server started on port %s', cfg.httpPort);
 

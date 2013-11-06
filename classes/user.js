@@ -1,3 +1,7 @@
+var usersById = {};
+var nextUserId = 0;
+var usersByTwitId = {};
+
 function User(){
 	
 }
@@ -21,7 +25,8 @@ User.prototype.add = function(source, sourceUser, callback) {
 		user[source] = sourceUser;
 	}
 	
-	callback(user);
+	//callback(user);
+	return user;
 }
 
 module.exports = new User();
