@@ -9,7 +9,7 @@ config.session.secret = 'c7657903af8c8b692594';
 
 //mongo database
 config.mongo = {};
-config.mongo.uri = process.env.MONGO_URI || 'mongodb://localhost';
+config.mongo.uri = process.env.MONGO_URI || 'mongodb://localhost:27017';
 config.mongo.db = 'example_dev';
 
 //twitter auth
