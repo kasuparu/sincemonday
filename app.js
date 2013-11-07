@@ -80,7 +80,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/db', function(req, res) {
-    console.log('mongodb://' + cfg.mongo.uri + '/' + cfg.mongo.db);
+    console.log(cfg.mongo.uri + '/' + cfg.mongo.db);
     MongoClient.connect('mongodb://' + cfg.mongo.uri + '/' + cfg.mongo.db, function(err, db){
 		if(err) throw err;
 		db.collection('users').findOne(function(err, user){
