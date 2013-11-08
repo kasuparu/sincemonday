@@ -58,7 +58,7 @@ sessionCookieData = sessionCookieOptions;
 sessionCookieData.key = sessionCookieName;
 
 app.configure(function(){
-	app.use(express.logger())
+	app	.use(express.logger())
 		.use(express.static(__dirname + '/static'))
 		.use(express.favicon())
 		.use(express.bodyParser())
@@ -81,7 +81,6 @@ app.configure(function(){
 		
 	app.enable('trust proxy');
 });
-
 
 app.get('/', function(req, res) {
 	var previous = req.session.value || 0;
