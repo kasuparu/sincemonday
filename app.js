@@ -69,21 +69,21 @@ app.configure(function(){
 		}))
 		.use(everyauth.middleware())
 		.use(express.csrf())
-		/*.use(function(req, res, next) {
-			console.log(JSON.stringify(req.session));
+		.use(function(req, res, next) {
+			req.session.value = (req.session.value || 0) + 1;
+			req.session.time = new Date();
 			next();
-		})*/
-		.use(app.router);
+		})
+		.use(app.router)
+		.set('view engine', 'ejs');
 		
 	app.enable('trust proxy');
 });
 
 app.get('/', function(req, res) {
-	var previous = req.session.value || 0;
-	req.session.value = previous + 1;
-	req.session.time = new Date();
-	
-    res.send('Hello, ' + JSON.stringify(req.user) + ' ' + JSON.stringify(req.session) + ' counter=' + previous + ' cookies: ' + JSON.stringify(req.signedCookies[sessionCookieName]) + ' '  + JSON.stringify(req.cookies[sessionCookieName]));
+    res.render('root', {
+		message: 'Hello, ' + JSON.stringify(req.user) + ' ' + JSON.stringify(req.session) + ' counter=' + req.session.value + ' cookies: ' + JSON.stringify(req.signedCookies[sessionCookieName]) + ' '  + JSON.stringify(req.cookies[sessionCookieName])
+	});
 	
 });
 
