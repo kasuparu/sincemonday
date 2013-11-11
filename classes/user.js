@@ -1,7 +1,3 @@
-var usersById = {};
-var nextUserId = 0;
-var usersByTwitId = {};
-
 var User = function (opts) {
 	opts = (opts === Object(opts)) ? opts : {};
 
@@ -17,7 +13,7 @@ var User = function (opts) {
 User.prototype.config = {};
 
 User.prototype.findOrCreateUser = function(source, oauthUser, accessToken, accessSecret, callback) {
-	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db, function(err, db) {
+	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
 		if (err) return callback(err, null);
 		db.collection('users').findOne({'id': oauthUser.id}, function(err, user) {
 			if (err) return callback(err, null);
@@ -27,6 +23,8 @@ User.prototype.findOrCreateUser = function(source, oauthUser, accessToken, acces
 					_id: new this.config.MongoDB.ObjectID(),
 					friends_ids: []
 				};
+			} else {
+				delete user._id;
 			}
 			
 			user.id = oauthUser.id;
@@ -35,10 +33,10 @@ User.prototype.findOrCreateUser = function(source, oauthUser, accessToken, acces
 			user.ot = accessToken;
 			user.ots = accessSecret;
 			
-			db.collection('users').update({id: user.id}, {$set: user}, {safe: true, upsert:true}, function(err){
+			db.collection('users').update({id: user.id}, {$set: user}, {safe: true, upsert:true}, function(err) {
 				if (err) return callback(err, null);
-				db.close();
 				callback(err, user);
+				db.close();
 			});
 		});
     });
@@ -46,25 +44,14 @@ User.prototype.findOrCreateUser = function(source, oauthUser, accessToken, acces
 
 User.prototype.findById = function(id, callback) {
 	console.log('User called findById');
-	// TODO: really find the user
-	callback(usersById[id]);
-}
-	
-User.prototype.add = function(source, sourceUser, callback) {
-	console.log('User called add');
-	// TODO: really add the user to the store
-	var user;
-	if (arguments.length === 1) { // password-based
-		user = sourceUser = source;
-		user.id = ++nextUserId;
-		return usersById[nextUserId] = user;
-	} else { // non-password-based
-		user = usersById[++nextUserId] = {id: nextUserId};
-		user[source] = sourceUser;
-	}
-	
-	//callback(user);
-	return user;
+	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
+		if (err) return callback(err, null);
+		db.collection('users').findOne({'id': id}, function(err, user) {
+			if (err) return callback(null);
+			callback(user);
+			db.close();
+		});
+    });
 }
 
 module.exports = exports = User;
