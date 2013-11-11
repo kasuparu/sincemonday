@@ -9,9 +9,17 @@ var express = require('express'),
 	MongoClient = MongoDB.MongoClient,
 	sessionCookieName = 'connect.sid',
 	sessionCookieOptions = {maxAge: 360*24*60*60*1000, signed: true, httpOnly: true},
+	twitterAPI = require('node-twitter-api'),
+	twitter = new twitterAPI({
+		consumerKey: cfg.twit.consumerKey,
+		consumerSecret: cfg.twit.consumerSecret,
+		callback: '/auth/twitter/callback',
+		oa: everyauth.twitter.oauth
+	}),
 	User = require('./classes/user')({
 		MongoDB: MongoDB,
-		cfg: cfg
+		cfg: cfg,
+		twitter: twitter
 	});
 
 // Everyauth config
@@ -39,6 +47,7 @@ everyauth.everymodule
 		console.log('everyauth called findUserById');
 		callback(null, User.findById(id));
 	});
+
 
 // App run
 sessionCookieData = sessionCookieOptions;
@@ -99,6 +108,26 @@ app.get('/db', function(req, res) {
 	
 	
 	
+});
+
+app.get('/twifriends', function(req, res) {
+	if (req.session.auth.twitter.user) {
+		
+		user = req.session.auth.twitter.user;
+		
+		console.log(JSON.stringify(req.session.auth.twitter));
+		
+		if (user.id) {
+			res.setHeader('content-type', 'application/json');
+			User.updateTwitterFriends(user.id, req.session.auth.twitter.accessToken, req.session.auth.twitter.accessTokenSecret, function(err, user) {
+				if (err) {
+					res.send(err);
+				} else {
+					res.send(user);
+				}
+			});
+		}
+	}
 });
 
 app.listen(cfg.httpPort);
