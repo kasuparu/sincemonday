@@ -6,9 +6,7 @@ var express = require('express'),
 	everyauth = require('everyauth'),
 	MongoStore = require('connect-mongo')(express),
 	MongoDB = require('mongodb'),
-	MongoClient = MongoDB.MongoClient,
-	sessionCookieName = 'connect.sid',
-	sessionCookieOptions = {maxAge: 360*24*60*60*1000, signed: true, httpOnly: true},
+	sessionCookieData = {key: 'connect.sid', maxAge: 360*24*60*60*1000, signed: true, httpOnly: true},
 	twitterAPI = require('node-twitter-api'),
 	twitter = new twitterAPI({
 		consumerKey: cfg.twit.consumerKey,
@@ -48,11 +46,14 @@ everyauth.everymodule
 		callback(null, User.findById(id));
 	});
 
+// Session config
+sessionTestingMiddleware = function(req, res, next) {
+	req.session.value = (req.session.value || 0) + 1;
+	req.session.time = new Date();
+	next();
+};
 
-// App run
-sessionCookieData = sessionCookieOptions;
-sessionCookieData.key = sessionCookieName;
-
+// App
 app.configure(function(){
 	app	.use(express.logger())
 		.use(express.static(__dirname + '/static'))
@@ -62,18 +63,14 @@ app.configure(function(){
 		.use(express.session({
 			store: new MongoStore({
 				url: cfg.mongo.uri + '/' + cfg.mongo.db,
-				auto_reconnect: true,
+				auto_reconnect: true
 			}),
 			secret: cfg.session.secret,
 			cookie: sessionCookieData
 		}))
 		.use(everyauth.middleware())
 		.use(express.csrf())
-		.use(function(req, res, next) {
-			req.session.value = (req.session.value || 0) + 1;
-			req.session.time = new Date();
-			next();
-		})
+		.use(sessionTestingMiddleware)
 		.use(app.router)
 		.set('view engine', 'ejs');
 		
@@ -82,7 +79,7 @@ app.configure(function(){
 
 app.get('/', function(req, res) {
     res.render('root', {
-		message: 'Hello, ' + JSON.stringify(req.user) + ' ' + JSON.stringify(req.session) + ' counter=' + req.session.value + ' cookies: ' + JSON.stringify(req.signedCookies[sessionCookieName]) + ' '  + JSON.stringify(req.cookies[sessionCookieName])
+		message: 'Hello, ' + JSON.stringify(req.user) + ' ' + JSON.stringify(req.session) + ' counter=' + req.session.value + ' cookies: ' + JSON.stringify(req.signedCookies[sessionCookieData.key]) + ' '  + JSON.stringify(req.cookies[sessionCookieData.key])
 	});
 	
 });
