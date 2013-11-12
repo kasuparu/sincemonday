@@ -18,6 +18,12 @@ var express = require('express'),
 		MongoDB: MongoDB,
 		cfg: cfg,
 		twitter: twitter
+	}),
+	Timer = require('./classes/timer');
+	
+	Timer.configure({
+		MongoDB: MongoDB,
+		cfg: cfg
 	});
 
 // Everyauth config
@@ -118,9 +124,20 @@ app.get('/twifriends', function(req, res) {
 
 app.get('/t/:id/show', function(req, res) {
     res.setHeader('content-type', 'application/json');
-	res.send(JSON.stringify({id: req.params.id}));
-	
-	
+	//res.send(JSON.stringify({id: req.params.id}));
+	if (req.params.id != 'undefined') {
+		//res.send(JSON.stringify(new Timer));
+		//timer = new Timer();
+		Timer.findById(req.params.id, function(err, timer) {
+			res.setHeader('content-type', 'application/json');
+			if (err) {
+				console.log(err);
+				res.send({});
+			} else if (timer) {
+				res.send(timer);
+			}
+		});
+	};
 });
 
 app.listen(cfg.httpPort);
