@@ -19,7 +19,8 @@ var express = require('express'),
 		cfg: cfg,
 		twitter: twitter
 	}),
-	Timer = require('./classes/timer');
+	Timer = require('./classes/timer'),
+	jsonContentType = 'application/json; charset=utf8';
 	
 	Timer.configure({
 		MongoDB: MongoDB,
@@ -93,7 +94,7 @@ app.get('/', function(req, res) {
 app.get('/db', function(req, res) {
 	User.findById(330157333, function(user) { // No err here!
 		if (user) {
-			res.setHeader('content-type', 'application/json');
+			res.setHeader('content-type', jsonContentType);
 			res.send(JSON.stringify(user));
 		}
 	});
@@ -110,7 +111,7 @@ app.get('/twifriends', function(req, res) {
 		console.log(JSON.stringify(req.session.auth.twitter));
 		
 		if (user.id) {
-			res.setHeader('content-type', 'application/json');
+			res.setHeader('content-type', jsonContentType);
 			User.updateTwitterFriends(user.id, req.session.auth.twitter.accessToken, req.session.auth.twitter.accessTokenSecret, function(err, user) {
 				if (err) {
 					res.send(err);
@@ -122,19 +123,14 @@ app.get('/twifriends', function(req, res) {
 	}
 });
 
-app.get('/t/:id/show', function(req, res) {
-    res.setHeader('content-type', 'application/json');
-	//res.send(JSON.stringify({id: req.params.id}));
-	if (req.params.id != 'undefined') {
-		//res.send(JSON.stringify(new Timer));
-		//timer = new Timer();
-		Timer.findById(req.params.id, function(err, timer) {
-			res.setHeader('content-type', 'application/json');
-			if (err) {
-				console.log(err);
-				res.send({});
-			} else if (timer) {
+app.get('/t/:id(\\d+)/show', function(req, res) {
+    res.setHeader('content-type', jsonContentType);
+	if (req.params.id != 'undefined' && !isNaN(req.params.id)) {
+		Timer.findById(parseInt(req.params.id), function(err, timer) {
+			if (!err && timer) {
 				res.send(timer);
+			} else {
+				res.send({});
 			}
 		});
 	};

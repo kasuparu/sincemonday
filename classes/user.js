@@ -15,7 +15,7 @@ User.prototype.config = {};
 User.prototype.findOrCreateUser = function(source, oauthUser, accessToken, accessSecret, callback) {
 	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
 		if (err) return callback(err, null);
-		db.collection('users').findOne({'id': oauthUser.id}, function(err, user) {
+		db.collection('users').findOne({id: oauthUser.id}, function(err, user) {
 			if (err) return callback(err, null);
 			
 			if (!user) {
