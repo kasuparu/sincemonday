@@ -44,4 +44,16 @@ Timer.findById = function(id, callback) {
 	callback('holy crap!', null);
 }
 
+Timer.prototype.viewAllowed = function(userId) {
+	return ((userId === this.owner) || (this.public));
+}
+
+Timer.prototype.restartAllowed = function(userId) {
+	return ((userId === this.owner) || (this.id === 0));
+}
+
+Timer.prototype.editAllowed = function(userId) {
+	return ((userId === this.owner) || ((typeof userId !== 'undefined') && (this.id === -1)));
+}
+
 module.exports = exports = Timer;
