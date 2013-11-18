@@ -70,7 +70,7 @@ User.prototype.updateTwitterFriends = function(id, accessToken, accessTokenSecre
 					
 					if (err) return callback(err, null);
 					
-					db.collection('users').findAndModify({id: id}, {}, {$set: {friends_ids: friendsIds}}, {safe: true, new: true}, function(err, user) {
+					db.collection('users').findAndModify({id: id}, {}, {$set: {friends_ids: friendsIds, friends_ids_timestamp: Math.round(new Date().getTime() / 1000)}}, {safe: true, new: true}, function(err, user) {
 						if (err) return callback(err, null);
 						callback(err, user);
 						db.close();
