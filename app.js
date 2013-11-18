@@ -24,7 +24,9 @@ var express = require('express'),
 	
 	Timer.configure({
 		MongoDB: MongoDB,
-		cfg: cfg
+		cfg: cfg,
+		twitter: twitter,
+		User: User
 	});
 
 // Everyauth config
@@ -36,6 +38,7 @@ everyauth
 		.consumerSecret(cfg.twit.consumerSecret)
 		.findOrCreateUser(function (sess, accessToken, accessSecret, twitUser) {
 			console.log('everyauth called twitter findOrCreateUser');
+			console.log('everyauth.twitter this: ' + this.constructor.name);
 			var promise = this.Promise();
 			User.findOrCreateUser('twitter', accessToken, accessSecret, twitUser, function(err, user) {
 				if (err) return promise.fail(err);
@@ -128,7 +131,19 @@ app.get('/t/:id(\\d+)/show', function(req, res) {
 	if (req.params.id != 'undefined' && !isNaN(req.params.id)) {
 		Timer.findById(parseInt(req.params.id), function(err, timer) {
 			if (!err && timer) {
-				res.send(timer);
+				if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
+					userId = req.session.auth.twitter.user.id;
+				}
+				
+				if (timer.viewAllowed(userId)) {
+					if (timer.editAllowed(userId)) {
+						res.send(timer.showJsonCanEdit());
+					} else {
+						res.send(timer.showJson());
+					}
+				} else {
+					res.send(timer.showJsonDenied());
+				}
 			} else {
 				res.send({});
 			}
