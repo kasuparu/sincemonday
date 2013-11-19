@@ -27,7 +27,11 @@ var express = require('express'),
 		cfg: cfg,
 		twitter: twitter,
 		User: User
-	});
+	}),
+	htmlEntities = function(str) {
+		return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	};
+
 
 // Everyauth config
 everyauth.debug = env == 'dev';
@@ -66,8 +70,8 @@ sessionTestingMiddleware = function(req, res, next) {
 // App
 app.configure(function(){
 	app	.use(express.logger())
+		.use(express.favicon(__dirname + '/static/favicon.ico'))
 		.use(express.static(__dirname + '/static'))
-		.use(express.favicon())
 		.use(express.bodyParser())
 		.use(express.cookieParser(cfg.session.secret))
 		.use(express.session({
@@ -88,8 +92,13 @@ app.configure(function(){
 });
 
 app.get('/', function(req, res) {
-    res.render('root', {
-		message: 'Hello, ' + JSON.stringify(req.user) + ' ' + JSON.stringify(req.session) + ' counter=' + req.session.value + ' cookies: ' + JSON.stringify(req.signedCookies[sessionCookieData.key]) + ' '  + JSON.stringify(req.cookies[sessionCookieData.key])
+    console.log(JSON.stringify(req.session.auth.twitter.user));
+	res.render('about', {
+		user: (req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) ? req.session.auth.twitter.user : {},
+		siteName: cfg.siteName,
+		softwareBuild: 'NYI', // TODO: get from 'software-build' file
+		htmlEntities: htmlEntities,
+		activePage: 'about'
 	});
 	
 });
