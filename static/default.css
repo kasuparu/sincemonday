@@ -1,0 +1,84 @@
+.navbar .nav {
+  margin: 5px 10px 0 0;
+}
+
+.push {
+  height: 6em;
+}
+
+
+
+div.static-index {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin-bottom: -6em;
+}
+
+div#footer {
+  height: 5em;
+}
+
+div.smallspace {
+  min-height: 20px;
+}
+
+.timer-good { /* Green */
+    /*-moz-box-shadow: 0 0 10px rgba(128,255,128,0.5);
+    -webkit-box-shadow: 0 0 10px rgba(128,255,128,0.5);
+    box-shadow: 0 0 10px rgba(128,255,128,0.5);*/
+    -moz-box-shadow: 0 0 10px rgba(45,159,12,0.7);
+    -webkit-box-shadow: 0 0 10px rgba(45,159,12,0.7);
+    box-shadow: 0 0 10px rgba(45,159,12,0.7);
+}
+
+.timer-bad { /* Red */
+    /*-moz-box-shadow: 0 0 10px rgba(255,128,128,0.5);
+    -webkit-box-shadow: 0 0 10px rgba(255,128,128,0.5);
+    box-shadow: 0 0 10px rgba(255,128,128,0.5);*/
+    -moz-box-shadow: 0 0 10px rgba(246,62,12,0.7);
+    -webkit-box-shadow: 0 0 10px rgba(246,62,12,0.7);
+    box-shadow: 0 0 10px rgba(246,62,12,0.7);
+}
+
+.timer-neutral { /* Grey */
+    -moz-box-shadow: 0 0 10px rgba(192,192,192,0.7);
+    -webkit-box-shadow: 0 0 10px rgba(192,192,192,0.7);
+    box-shadow: 0 0 10px rgba(192,192,192,0.7);
+}
+
+.background-good { /* Green */
+  background: rgba(45,159,12,0.5);
+}
+
+.background-bad { /* Red */
+  background: rgba(246,62,12,0.5);
+}
+
+div.timer {
+    position: relative;
+}
+
+div.timer > div.icon-public {
+    position: absolute;
+    right: 5px;
+    top: 4px;
+}
+div.timer > div.icon-good {
+    position: absolute;
+    right: 22px;
+    top: 4px;
+}
+
+div.timer > div.icon-name {
+    font-size: 80%;
+    position: absolute;
+    left: 5px;
+    top: 4px;
+}
+
+.loading {
+  background-image: url("/loading.gif");
+  background-repeat: no-repeat;
+  background-position: center center;
+}

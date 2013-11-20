@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<title><%=siteName %></title>
+		<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="/favicon.ico" />
+		<link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico" />
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<script type="text/javascript" src="/plusstrap/docs/assets/js/jquery.js"></script>
+		<link rel="stylesheet" type="text/css" href="/plusstrap/docs/assets/css/plusstrap.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" type="text/css" href="/plusstrap/docs/assets/css/plusstrap-responsive.css" />
+		<link rel="stylesheet" type="text/css" href="/plusstrap/docs/assets/css/docs.css" />
+		<link rel="stylesheet" type="text/css" href="/default.css" />
+		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-transition.js"></script>
+		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-dropdown.js"></script>
+		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-scrollspy.js"></script>
+		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-tooltip.js"></script>
+		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-popover.js"></script>
+		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-collapse.js"></script>
+		<script type="text/javascript" src="/js/timer.show.js"></script>
+		<script type="text/javascript" src="/js/timer.restart.js"></script>
+		<script type="text/javascript" src="/js/timer.list.js"></script>
+		<script type="text/javascript" src="/js/timer.set.js"></script>
+		<script type="text/javascript" src="/js/timer.remove.js"></script>
+		<script type="text/javascript" src="/js/jsDate.js"></script>
+		<link rel="stylesheet" type="text/css" href="/datepicker/css/datepicker.css" />
+		<script type="text/javascript" src="/datepicker/js/bootstrap-datepicker.js"></script>
+		<link rel="stylesheet" type="text/css" href="/bootstrap-timepicker/compiled/timepicker.css" />
+		<script type="text/javascript" src="/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
+		
+		<script type="text/javascript">
+
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-35029575-1']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
+	</head>
+<body data-spy="scroll">
+<div id="menubar" class="navbar navbar-fixed-top">
+	<div id="menubar_container" class="navbar-inner">
+	<div class="container">
+		<a class="btn btn-navbar" data-target=".nav-collapse" data-toggle="collapse">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+		</a>
+		<a class="brand" href="/"><%= siteName %></a>
+<% 		if (user && user.screen_name) { %>
+		<div class="btn-group pull-right">
+			<a class="btn dropdown-toggle" href="#" data-toggle="dropdown">
+				<i class="icon-user"></i>
+				<%=htmlEntities(user.screen_name) %>
+				<span class="caret"></span>
+			</a>
+			<ul class="dropdown-menu">
+				<li>
+					<a href="/u/<%=htmlEntities(user.screen_name) %>">Профиль</a>
+				</li>
+				<li class="divider"></li>
+				<li>
+					<a href="/logout">Выход</a>
+				</li>
+			</ul>
+		</div>
+<%
+		}
+%>
+		<div id="menubar_navigation" class="nav-collapse collapse">
+			<ul class="nav">
+<% 		if (user && user.screen_name) { %>
+				<li class="<% if (activePage == 'user' && activeId == user.screen_name) { %> active <% } %>">
+					<a href="/u/<%=htmlEntities(user.screen_name) %>"><i class="icon-white icon-user"></i>
+					<span class="hidden-desktop pull-right">
+						<%=htmlEntities(user.screen_name) %>
+					</span>
+					</a>
+				</li>
+<%
+		}
+%>
+				<li class="<% if (activePage == 'about') { %> active <% } %>">
+					<a href="/"><i class="icon-white icon-home"></i>
+					<span class="hidden-desktop pull-right">
+						<%= siteName %>
+					</span>
+					</a>
+				</li>
+			</ul>
+		</div><!--/.nav-collapse -->
+
+
+	</div>
+	</div>
+</div>
+<div class="container-fluid static-index">
