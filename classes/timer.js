@@ -120,4 +120,28 @@ Timer.prototype.getOwnerName = function() {
 	return 'getOwnerName NYI';
 }
 
+Timer.prototype.restart = function(callback) {
+	var nowTimestamp = Math.round(new Date().getTime() / 1000);
+	this.last_restart = nowTimestamp;
+	target = this;
+	
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		db.collection('timers').findAndModify({id: target.id}, {}, {$set: {last_restart: nowTimestamp}}, {safe: true, new: true}, function(err, timer) {
+			if (err) return callback(err, null);
+			if (timer) {
+				db.collection('updates').insert({id: timer.id, last_restart: timer.last_restart}, {safe: true}, function(err, obj) {
+					if (err) return callback(err, null);
+					
+					callback(err, timer);
+					db.close();
+				});
+			}
+			else {
+				callback(err, null);
+				db.close();
+			}
+		});
+	});
+}
+
 module.exports = exports = Timer;

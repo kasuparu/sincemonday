@@ -5,7 +5,7 @@ function timerRestart(id,element_id,stop_timer) {
 	$.ajax({
 	  url: '/t/'+id+'/restart',
 	  dataType: 'json',
-	  type: 'POST',
+	  type: 'GET',
 	  success: function (data) {
 	    $(element_id).removeClass("loading");
 	    timerShow(id,element_id);

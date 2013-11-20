@@ -178,6 +178,35 @@ app.get('/t/:id(\\d+)/show', function(req, res) {
 	};
 });
 
+app.get('/t/:id(\\d+)/restart', function(req, res) {
+    res.setHeader('content-type', jsonContentType);
+	if (req.params.id != 'undefined' && !isNaN(req.params.id)) {
+		Timer.findById(parseInt(req.params.id), function(err, timer) {
+			if (!err && timer) {
+				if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
+					userId = req.session.auth.twitter.user.id;
+				} else {
+					userId = -1;
+				}
+				
+				if (timer.restartAllowed(userId)) {
+					timer.restart(function(err, timer) {
+						if (!err && timer) {
+							res.send({ok: 1});
+						} else {
+							res.send({ok: 0});
+						}
+					});
+				} else {
+					res.send({ok: 0});
+				}
+			} else {
+				res.send({ok: 0});
+			}
+		});
+	};
+});
+
 app.listen(cfg.httpPort);
 console.log('Express server started on port %s', cfg.httpPort);
 
