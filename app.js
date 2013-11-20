@@ -3,6 +3,7 @@ var express = require('express'),
     app = express(),
 	env = process.env.NODE_ENV || 'dev',
 	cfg = require('./config.' + env),
+	fs = require('fs'),
 	everyauth = require('everyauth'),
 	MongoStore = require('connect-mongo')(express),
 	MongoDB = require('mongodb'),
@@ -30,8 +31,18 @@ var express = require('express'),
 	}),
 	htmlEntities = function(str) {
 		return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-	};
-
+	},
+	softwareBuild = '';
+	
+try {
+	softwareBuild = fs.readFileSync(__dirname + '/software-build', 'utf8');
+} catch (e) {
+	if (e.code === 'ENOENT') {
+		console.log('File \'/software-build\' not found.');
+	} else {
+		throw e;
+	}
+};
 
 // Everyauth config
 everyauth.debug = env == 'dev';
@@ -41,8 +52,7 @@ everyauth
 		.consumerKey(cfg.twit.consumerKey)
 		.consumerSecret(cfg.twit.consumerSecret)
 		.findOrCreateUser(function (sess, accessToken, accessSecret, twitUser) {
-			console.log('everyauth called twitter findOrCreateUser');
-			console.log('everyauth.twitter this: ' + this.constructor.name);
+			//console.log('everyauth called twitter findOrCreateUser');
 			var promise = this.Promise();
 			User.findOrCreateUser('twitter', accessToken, accessSecret, twitUser, function(err, user) {
 				if (err) return promise.fail(err);
@@ -56,8 +66,8 @@ everyauth
 
 everyauth.everymodule
 	.findUserById(function (id, callback) {
-		console.log('everyauth called findUserById');
-		callback(null, User.findById(id));
+		//console.log('everyauth called findUserById');
+		User.findById(id, callback);
 	});
 
 // Session config
@@ -92,11 +102,11 @@ app.configure(function(){
 });
 
 app.get('/', function(req, res) {
-    console.log(JSON.stringify(req.session.auth.twitter.user));
+    //console.log(JSON.stringify(req.session.auth.twitter.user));
 	res.render('about', {
 		user: (req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) ? req.session.auth.twitter.user : {},
 		siteName: cfg.siteName,
-		softwareBuild: 'NYI', // TODO: get from 'software-build' file
+		softwareBuild: softwareBuild, // TODO: get from 'software-build' file
 		htmlEntities: htmlEntities,
 		activePage: 'about'
 	});
@@ -119,8 +129,7 @@ app.get('/twifriends', function(req, res) {
 	if (req.session.auth.twitter.user) {
 		
 		user = req.session.auth.twitter.user;
-		
-		console.log(JSON.stringify(req.session.auth.twitter));
+		//console.log(JSON.stringify(req.session.auth.twitter));
 		
 		if (user.id) {
 			res.setHeader('content-type', jsonContentType);
@@ -142,19 +151,28 @@ app.get('/t/:id(\\d+)/show', function(req, res) {
 			if (!err && timer) {
 				if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
 					userId = req.session.auth.twitter.user.id;
+				} else {
+					userId = -1;
 				}
 				
 				if (timer.viewAllowed(userId)) {
 					if (timer.editAllowed(userId)) {
-						res.send(timer.showJsonCanEdit());
+						timer.showJsonCanEdit(function(err, timer) {
+							res.send(err || timer);
+						});
+						
 					} else {
-						res.send(timer.showJson());
+						timer.showJson(function(err, timer) {
+							res.send(err || timer);
+						});
 					}
 				} else {
-					res.send(timer.showJsonDenied());
+					timer.showJsonDenied(function(err, timer) {
+						res.send(err || timer);
+					});
 				}
 			} else {
-				res.send({});
+				res.send(err);
 			}
 		});
 	};

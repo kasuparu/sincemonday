@@ -53,9 +53,15 @@ Timer.findById = function(id, callback) {
     });
 };
 
-Timer.prototype.values = function() {
+Timer.prototype.getOwner = function(callback) {
+	Timer.config.User.findById(this.owner, function(user) {
+		callback(user);
+	});
+};
+
+Timer.prototype.values = function(callback) {
 	if (this.set == 1) {
-		setObject = {};
+		var setObject = {};
 		setObject['set'] = 1;
 		
 		for(var i in Timer.defaultValues) {
@@ -63,32 +69,39 @@ Timer.prototype.values = function() {
 				setObject[i] = this[i];
 			}
 		};
-		setObject['owner_name'] = this.getOwnerName();
-		return setObject;
+		this.getOwner(function(user) {
+			if (user) setObject['owner_name'] = user.logged_in;
+			//console.log('setObject ' + JSON.stringify(setObject));
+			callback(null, setObject);
+		});
+		
 	} else {
-		return {
+		callback(null, {
 			set: this.set,
 			id: this.id
-		};
+		});
 	}
 }
 
-Timer.prototype.showJson = function() {
-	return this.values();
+Timer.prototype.showJson = function(callback) {
+	this.values(callback);
 }
 
-Timer.prototype.showJsonCanEdit = function() {
-	result = this.values();
-	result['can_edit'] = 1;
-	return result;
+Timer.prototype.showJsonCanEdit = function(callback) {
+	this.values(function(err, setObject) {
+		if (err) return callback(err, setObject);
+		setObject['can_edit'] = 1;
+		callback(null, setObject);
+	});
+	
 }
 
-Timer.prototype.showJsonDenied = function() {
-	return {
+Timer.prototype.showJsonDenied = function(callback) {
+	callback(null, {
 		id: this.id,
 		set: this.set,
 		denied: 1
-	};
+	});
 }
 
 Timer.prototype.viewAllowed = function(userId) {

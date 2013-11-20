@@ -12,7 +12,7 @@ var User = function (opts) {
 
 User.prototype.config = {};
 
-User.prototype.findOrCreateUser = function(source, oauthUser, accessToken, accessSecret, callback) {
+User.prototype.findOrCreateUser = function(source, accessToken, accessSecret, oauthUser, callback) {
 	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
 		if (err) return callback(err, null);
 		db.collection('users').findOne({id: oauthUser.id}, function(err, user) {
@@ -29,7 +29,7 @@ User.prototype.findOrCreateUser = function(source, oauthUser, accessToken, acces
 			
 			user.id = oauthUser.id;
 			user.source = source;
-			user.logged_in = oauthUser.logged_in;
+			user.logged_in = oauthUser.logged_in || oauthUser.screen_name;
 			user.ot = accessToken;
 			user.ots = accessSecret;
 			
@@ -43,9 +43,8 @@ User.prototype.findOrCreateUser = function(source, oauthUser, accessToken, acces
 }
 
 User.prototype.findById = function(id, callback) {
-	console.log('User called findById');
 	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
-		if (err) return callback(err, null);
+		if (err) return callback(null);
 		db.collection('users').findOne({id: id}, function(err, user) {
 			if (err) return callback(null);
 			callback(user);
