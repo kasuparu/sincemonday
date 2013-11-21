@@ -210,15 +210,18 @@ Timer.regenerateHandle = function(handleName, callback) {
 		var queue = Timer.config.async.queue(function(object, callback) {
 			Timer.getRandomId(function(err, obj) {
 				tries++;
-				if ((err || !obj) && tries < 10) {
+				if ((err || !obj) && tries < 50) {
 					queue.push({});
 					return callback();
 				}
-				if (obj.id && ids.indexOf(obj.id) != -1 && tries < 10) {
+				if (obj.id && ids.indexOf(obj.id) != -1 && tries < 50) {
 					queue.push({});
 					callback();
 				} else {
-					ids.push(obj.id);
+					if (obj.id) {
+						ids.push(obj.id);
+					}
+					
 					callback();
 				}
 			});
