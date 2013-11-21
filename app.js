@@ -182,11 +182,62 @@ app.get('/t/:id(\\d+)/restart', function(req, res) {
 							res.send({ok: 0});
 						}
 					});
+
 				} else {
 					res.send({ok: 0});
 				}
 			} else {
 				res.send({ok: 0});
+			}
+		});
+	};
+});
+
+app.get('/t/:id(\\d+)/set', function(req, res) {
+    res.setHeader('content-type', jsonContentType);
+	if (req.params.id != 'undefined' && !isNaN(req.params.id)) {
+		Timer.findById(parseInt(req.params.id), function(err, timer) {
+			if (!err && timer) {
+				console.log('set found timer id ' + timer.id);
+				if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
+					userId = req.session.auth.twitter.user.id;
+				} else {
+					userId = -1;
+				}
+				
+				if (timer.editAllowed(userId)) {
+					// Set timer params
+					var label = req.params.name;
+					var goodVal = req.params.good;
+					var publicVal = req.params.public;
+					if (parseInt(req.params.id) == -1) {
+						if (typeof req.query.last_update != 'undefined' && req.query.last_update && req.query.last_update != '-1' && !isNaN(parseInt(req.query.last_update))) {
+							var last_update = parseInt(req.query.last_update);
+							var date_selected = 1;
+						} else {
+							var last_update = Math.round(new Date().getTime() / 1000);
+							var date_selected = 0;
+						}
+					} else {
+						var last_update = -1;
+					}
+					timer.setProps(label, userId, last_update, date_selected);
+					timer.setGood(goodVal);
+					timer.setPublic(publicVal);
+					timer.save(function(err, timer) {
+						if (!err && timer) {
+							timer.showJsonCanEdit(function(err, timer) {
+								res.send(err || timer);
+							});
+						} else {
+							res.send({});
+						}
+					});
+				} else {
+					res.send({});
+				}
+			} else {
+				res.send({});
 			}
 		});
 	};

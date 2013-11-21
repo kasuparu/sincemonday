@@ -3,7 +3,7 @@ var Timer = function (opts) {
 	
 	// If opts are empty, give timer defaultValues else fill it
 	if (Object.keys(opts).length === 0) {
-		for (var key in opts) if ({}.hasOwnProperty.call(Timer.defaultValues, key)) {
+		for (var key in Timer.defaultValues) if ({}.hasOwnProperty.call(Timer.defaultValues, key)) {
 			this[key] = Timer.defaultValues[key];
 		}
 		this['set'] = 0;
@@ -124,17 +124,25 @@ Timer.prototype.restart = function(callback) {
 		db.collection('timers').findAndModify({id: target.id}, {}, {$set: {last_restart: nowTimestamp}}, {safe: true, new: true}, function(err, timer) {
 			if (err) return callback(err, null);
 			if (timer) {
-				db.collection('updates').insert({id: timer.id, last_restart: timer.last_restart}, {safe: true}, function(err, obj) {
-					if (err) return callback(err, null);
-					
-					callback(err, timer);
-					db.close();
-				});
+				Timer.recordUpdate(timer, callback);
+				db.close();
 			}
 			else {
 				callback(err, null);
 				db.close();
 			}
+		});
+	});
+}
+
+Timer.recordUpdate = function(timer, callback) {
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		if (err) return callback(err, null);
+		db.collection('updates').insert({id: timer.id, last_restart: timer.last_restart}, {safe: true}, function(err, obj) {
+			if (err) return callback(err, null);
+			
+			callback(err, timer);
+			db.close();
 		});
 	});
 }
@@ -256,7 +264,7 @@ Timer.getNextId = function(callback) {
 	});
 }
 
-Timer.prototype.set = function(label, ownerId, lastRestart, dateSelected) {
+Timer.prototype.setProps = function(label, ownerId, lastRestart, dateSelected) {
 	if (typeof lastRestart != 'undefined' && lastRestart != -1 && lastRestart != '-1' && !isNaN(parseInt(lastRestart))) {
 		this.last_restart = parseInt(lastRestart);
 	}
@@ -265,7 +273,7 @@ Timer.prototype.set = function(label, ownerId, lastRestart, dateSelected) {
 	this.owner = parseInt(ownerId);
 	this.random = Math.random();
 	this.set = 1;
-	// TODO: this.created must be init on save()
+	// TODO: this.id and this.created must be init on save()
 }
 
 Timer.prototype.setPublic = function(publicVal) {
@@ -278,6 +286,39 @@ Timer.prototype.setGood = function(goodVal) {
 	if (this.set == 1) {
 		this.good = goodVal ? 1 : 0;
 	}
+}
+
+Timer.prototype.save = function(callback) {
+	if (this.set == 1) {
+		var setObject = {};
+		for(var i in Timer.defaultValues) {
+			if (this.hasOwnProperty(i)) {
+				setObject[i] = this[i];
+			} else {
+				setObject[i] = this[i] = Timer.defaultValues[i];
+			}
+		};
+		if (this.id == -1) {
+			this.insert(setObject, callback);
+		} else {
+			this.update(setObject, callback);
+		}
+	}
+}
+
+Timer.prototype.insert = function(setObject, callback) {
+	throw new Error('Timer.prototype.insert NYI');
+	Timer.recordUpdate(timer, callback);
+}
+
+Timer.prototype.update = function(setObject, callback) {
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		db.collection('timers').findAndModify({id: setObject.id}, {}, {$set: setObject}, {safe: true, new: true}, function(err, timer) {
+			if (err) return callback(err, null);
+			callback(err, timer);
+			db.close();
+		});
+	});
 }
 
 module.exports = exports = Timer;

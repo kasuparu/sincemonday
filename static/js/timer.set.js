@@ -182,7 +182,7 @@ function timerShowForm(data,element_id) {
 	    data: formData,
 	    //data: formData,
 	    dataType: 'json',
-	    type: 'POST',
+	    type: 'GET',
 	    success: function (data) {
 	      $(element_id).removeClass("loading");
 	      //console.log('data sent, response:'+data.id);
