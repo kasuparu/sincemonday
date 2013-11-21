@@ -21,7 +21,7 @@ User.prototype.findOrCreateUser = function(source, accessToken, accessSecret, oa
 			
 			if (!user) {
 				user = {
-					_id: new target.config.MongoDB.ObjectID(),
+					//_id: new target.config.MongoDB.ObjectID(),
 					friends_ids: []
 				};
 			} else {
