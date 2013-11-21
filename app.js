@@ -129,7 +129,7 @@ app.get('/db', function(req, res) {
 	
 });
 
-app.get('/t/:id(\\d+)/show', function(req, res) {
+app.get('/t/:id(-?\\d+)/show', function(req, res) {
     res.setHeader('content-type', jsonContentType);
 	if (req.params.id != 'undefined' && !isNaN(req.params.id)) {
 		Timer.findById(parseInt(req.params.id), function(err, timer) {
@@ -193,12 +193,41 @@ app.get('/t/:id(\\d+)/restart', function(req, res) {
 	};
 });
 
-app.get('/t/:id(\\d+)/set', function(req, res) {
+app.get('/t/:id(\\d+)/remove', function(req, res) {
     res.setHeader('content-type', jsonContentType);
 	if (req.params.id != 'undefined' && !isNaN(req.params.id)) {
 		Timer.findById(parseInt(req.params.id), function(err, timer) {
 			if (!err && timer) {
-				console.log('set found timer id ' + timer.id);
+				if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
+					userId = req.session.auth.twitter.user.id;
+				} else {
+					userId = -1;
+				}
+				
+				if (timer.editAllowed(userId)) {
+					timer.remove(timer, function(err, timer) {
+						if (!err && timer) {
+							res.send({ok: 1});
+						} else {
+							res.send({ok: 0});
+						}
+					});
+
+				} else {
+					res.send({ok: 0});
+				}
+			} else {
+				res.send({ok: 0});
+			}
+		});
+	};
+});
+
+app.get('/t/:id(-?\\d+)/set', function(req, res) {
+    res.setHeader('content-type', jsonContentType);
+	if (req.params.id != 'undefined' && !isNaN(req.params.id)) {
+		Timer.findById(parseInt(req.params.id), function(err, timer) {
+			if (!err && timer) {
 				if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
 					userId = req.session.auth.twitter.user.id;
 				} else {
@@ -207,10 +236,10 @@ app.get('/t/:id(\\d+)/set', function(req, res) {
 				
 				if (timer.editAllowed(userId)) {
 					// Set timer params
-					var label = req.params.name;
-					var goodVal = req.params.good;
-					var publicVal = req.params.public;
-					if (parseInt(req.params.id) == -1) {
+					var label = req.query.name;
+					var goodVal = req.query.good;
+					var publicVal = req.query.public;
+					if (parseInt(req.query.id) == -1) {
 						if (typeof req.query.last_update != 'undefined' && req.query.last_update && req.query.last_update != '-1' && !isNaN(parseInt(req.query.last_update))) {
 							var last_update = parseInt(req.query.last_update);
 							var date_selected = 1;

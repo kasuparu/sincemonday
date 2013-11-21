@@ -65,7 +65,7 @@ Timer.prototype.values = function(callback) {
 		setObject['set'] = 1;
 		
 		for(var i in Timer.defaultValues) {
-			if (this.hasOwnProperty(i)) {
+			if ({}.hasOwnProperty.call(this, i)) {
 				setObject[i] = this[i];
 			}
 		};
@@ -214,7 +214,7 @@ Timer.regenerateHandle = function(handleName, callback) {
 					queue.push({});
 					return callback();
 				}
-				if (ids.indexOf(obj.id) != -1 && tries < 10) {
+				if (obj.id && ids.indexOf(obj.id) != -1 && tries < 10) {
 					queue.push({});
 					callback();
 				} else {
@@ -249,7 +249,7 @@ Timer.saveHandle = function(handleName, setObject, callback) {
 	});
 }
 
-Timer.getNextId = function(callback) {
+Timer.getMaxId = function(callback) {
 	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
 		db.collection('timers').aggregate([
 			{$group: {
@@ -258,7 +258,7 @@ Timer.getNextId = function(callback) {
 			}}
 		], function(err, result) {
 			if (err) return callback(err, null);
-			callback(err, result[0]['maxId']);
+			callback(err, result[0]['maxId'] || 1);
 			db.close();
 		});
 	});
@@ -273,18 +273,17 @@ Timer.prototype.setProps = function(label, ownerId, lastRestart, dateSelected) {
 	this.owner = parseInt(ownerId);
 	this.random = Math.random();
 	this.set = 1;
-	// TODO: this.id and this.created must be init on save()
 }
 
 Timer.prototype.setPublic = function(publicVal) {
 	if (this.set == 1) {
-		this.public = publicVal ? 1 : 0;
+		this.public = publicVal != '1' ? 0 : 1;
 	}
 }
 
 Timer.prototype.setGood = function(goodVal) {
 	if (this.set == 1) {
-		this.good = goodVal ? 1 : 0;
+		this.good = goodVal == '1' ? 1 : 0;
 	}
 }
 
@@ -292,7 +291,7 @@ Timer.prototype.save = function(callback) {
 	if (this.set == 1) {
 		var setObject = {};
 		for(var i in Timer.defaultValues) {
-			if (this.hasOwnProperty(i)) {
+			if ({}.hasOwnProperty.call(this, i)) {
 				setObject[i] = this[i];
 			} else {
 				setObject[i] = this[i] = Timer.defaultValues[i];
@@ -307,16 +306,62 @@ Timer.prototype.save = function(callback) {
 }
 
 Timer.prototype.insert = function(setObject, callback) {
-	throw new Error('Timer.prototype.insert NYI');
-	Timer.recordUpdate(timer, callback);
+	var timer = null;
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		db.ensureIndex('timers', {id:1}, {unique: true}, function(err, index) {
+			var queue = Timer.config.async.queue(function(id, callback) {
+				var insertObject = setObject;
+				insertObject.id = id;
+				insertObject.created = Math.round(new Date().getTime() / 1000);
+					
+				db.collection('timers').insert(insertObject, {safe: true}, function(err, records) {
+					if (err) {
+						if (err.code == 11000 /* dup key */) {
+							queue.push(id+1);
+							callback();
+						}
+					} else {
+						timer = new Timer(records[0]);
+						callback();
+						db.close();
+					}
+				});
+			});
+			queue.drain = function() {
+				Timer.recordUpdate(timer, function(err, timer){
+					callback(err, timer);
+				});
+			};
+			
+			Timer.getMaxId(function(err, id) {
+				if (err) return callback(err, null);
+				queue.push(id+1);
+			});
+		});
+	});
+		
+	
 }
 
 Timer.prototype.update = function(setObject, callback) {
 	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
 		db.collection('timers').findAndModify({id: setObject.id}, {}, {$set: setObject}, {safe: true, new: true}, function(err, timer) {
 			if (err) return callback(err, null);
-			callback(err, timer);
+			callback(err, new Timer(timer));
 			db.close();
+		});
+	});
+}
+
+Timer.prototype.remove = function(timer, callback) {
+	timer.restart(function(err, timer) {
+		if (err) return callback(err, null);
+		Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+			db.collection('timers').findAndModify({id: timer.id}, {}, {$set: {removed: 1}}, {safe: true, new: true}, function(err, timer) {
+				if (err) return callback(err, null);
+				callback(err, new Timer(timer));
+				db.close();
+			});
 		});
 	});
 }

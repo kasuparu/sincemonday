@@ -125,6 +125,9 @@ User.prototype.timerList = function(ownerId, userId, callback) {
 					timerList.push(timer.id);
 				}
 				if (timer == null) {
+					if (ownerId == userId) {
+						timerList.push(-1);
+					}
 					callback(null, timerList);
 					db.close();
 				}
