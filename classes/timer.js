@@ -1,7 +1,6 @@
 var Timer = function (opts) {
 	opts = (opts === Object(opts)) ? opts : {};
 	
-	// If opts are empty, give timer defaultValues else fill it
 	if (Object.keys(opts).length === 0) {
 		for (var key in Timer.defaultValues) if ({}.hasOwnProperty.call(Timer.defaultValues, key)) {
 			this[key] = Timer.defaultValues[key];
@@ -13,8 +12,6 @@ var Timer = function (opts) {
 		}
 		this['set'] = 1;
 	}
-
-    
 };
 
 Timer.defaultValues = {
@@ -153,7 +150,7 @@ Timer.getRandomId = function(callback) {
 	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
 		if (err) return callback(err, null);
 		
-		db.collection('timers').findOne({public: 1, removed:0, random: {$gte: random}}, {id: 1, _id: 0}, function(err, obj) {
+		db.collection('timers').findOne({public: 1, removed: 0, random: {$gte: random}}, {id: 1, _id: 0}, function(err, obj) {
 			if (err) return callback(err, obj);
 			
 			if (obj) {
@@ -161,7 +158,7 @@ Timer.getRandomId = function(callback) {
 				db.close();
 			} else {
 				
-				db.collection('timers').findOne({public: 1, removed:0, random: {$lte: random}}, {id: 1, _id: 0}, function(err, obj) {
+				db.collection('timers').findOne({public: 1, removed: 0, random: {$lte: random}}, {id: 1, _id: 0}, function(err, obj) {
 					if (err) return callback(err, obj);
 					callback(err, obj);
 					db.close();
@@ -176,7 +173,7 @@ Timer.getHandle = function(handleName, callback) {
 	Timer.findHandle(handleName, function(err, handle) {
 		if (err) return callback(err, handle);
 		var nowTimestamp = Math.round(new Date().getTime() / 1000);
-		if (handle && (nowTimestamp - handle.timestamp < 60)) {
+		if (handle && (nowTimestamp - handle.timestamp < 20)) {
 			callback(err, handle);
 		} else {
 			Timer.regenerateHandle(handleName, function(err, handle) {
@@ -206,18 +203,13 @@ Timer.regenerateHandle = function(handleName, callback) {
 		var queue = Timer.config.async.queue(function(object, callback) {
 			Timer.getRandomId(function(err, obj) {
 				tries++;
-				if ((err || !obj) && tries < 50) {
-					queue.push({});
-					return callback();
-				}
-				if (obj.id && ids.indexOf(obj.id) != -1 && tries < 50) {
+				if ((err || !obj || !obj.id || ids.indexOf(obj.id) != -1) && tries < 10) {
 					queue.push({});
 					callback();
 				} else {
 					if (obj.id) {
 						ids.push(obj.id);
 					}
-					
 					callback();
 				}
 			});
