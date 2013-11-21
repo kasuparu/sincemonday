@@ -175,18 +175,14 @@ Timer.getRandomId = function(callback) {
 Timer.getHandle = function(handleName, callback) {
 	Timer.findHandle(handleName, function(err, handle) {
 		if (err) return callback(err, handle);
-		if (handle) {
-			var nowTimestamp = Math.round(new Date().getTime() / 1000);
-			if (nowTimestamp - handle.timestamp < 60) {
-				callback(err, handle);
-			} else {
-				Timer.regenerateHandle(handleName, function(err, handle) {
-					if (err) return callback(err, null);
-					callback(err, handle);
-				});
-			}
-		} else {
+		var nowTimestamp = Math.round(new Date().getTime() / 1000);
+		if (handle && (nowTimestamp - handle.timestamp < 60)) {
 			callback(err, handle);
+		} else {
+			Timer.regenerateHandle(handleName, function(err, handle) {
+				if (err) return callback(err, null);
+				callback(err, handle);
+			});
 		}
 	});
 }
