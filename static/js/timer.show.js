@@ -38,7 +38,7 @@ function timerShow(id,element_id) {
 		  items+='<div class="icon-public"><i class="icon-eye-close"></i></div>';
 		}
 		if (data.owner_name) {
-		  items+='<div class="icon-name"><a href="http://'+window.location.hostname+'/u/'+data.owner_name+'">'+data.owner_name+'</a></div>';
+		  items+='<div class="icon-name"><a href="/u/'+data.owner_name+'">'+data.owner_name+'</a></div>';
 		}
 		items+='<div class=""><center>';
 		items+=data.name;

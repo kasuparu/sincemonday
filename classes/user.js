@@ -13,6 +13,7 @@ var User = function (opts) {
 User.prototype.config = {};
 
 User.prototype.findOrCreateUser = function(source, accessToken, accessSecret, oauthUser, callback) {
+	target = this;
 	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
 		if (err) return callback(err, null);
 		db.collection('users').findOne({id: oauthUser.id}, function(err, user) {
@@ -35,6 +36,7 @@ User.prototype.findOrCreateUser = function(source, accessToken, accessSecret, oa
 			
 			db.collection('users').findAndModify({id: user.id}, {}, {$set: user}, {safe: true, upsert:true}, function(err, user) {
 				if (err) return callback(err, null);
+				target.checkUpdateTwitterFriends(user, function() {});
 				callback(err, user);
 				db.close();
 			});
@@ -53,10 +55,19 @@ User.prototype.findById = function(id, callback) {
     });
 }
 
+User.prototype.checkUpdateTwitterFriends = function(user, callback) {
+	if (user && user.id && user.ot && user.ots) {
+		console.log('checking need for updating friends of ' + user.id);
+		if (!user.friends_ids_timestamp || (Math.round(new Date().getTime() / 1000) - user.friends_ids_timestamp > 86400)) {
+			this.updateTwitterFriends(user.id, user.ot, user.ots, callback);
+		}
+	};
+}
+
 User.prototype.updateTwitterFriends = function(id, accessToken, accessTokenSecret, callback) {
-	console.log('User called updateTwitterFriends');
 	var _MongoDB = this.config.MongoDB;
 	var _cfg = this.config.cfg;
+	console.log('updating friends of ' + id);
 	this.config.twitter.friends('ids', '', accessToken, accessTokenSecret, function(err, data, response) {
 		if (err) {
 			console.log(err);
@@ -78,7 +89,76 @@ User.prototype.updateTwitterFriends = function(id, accessToken, accessTokenSecre
 			}
 		}
 	});
-	
+}
+
+User.prototype.findByName = function(screenName, callback) {
+	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
+		if (err) return callback(null);
+		db.collection('users').findOne({logged_in: screenName}, function(err, user) {
+			if (err) return callback(null);
+			callback(user);
+			db.close();
+		});
+    });
+}
+
+User.prototype.timerList = function(ownerId, userId, callback) {
+	if (typeof ownerId != 'undefined') {
+		if (ownerId == userId) {
+			var query = {
+				owner: ownerId,
+				removed: 0,
+			};
+		} else {
+			var query = {
+				owner: ownerId,
+				removed: 0,
+				public: 1
+			};
+		}
+		var timerList = [];
+		this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
+			if (err) return callback(null);
+			var cursor = db.collection('timers').find(query).sort('last_restart');
+			cursor.each(function(err, timer) {
+				if (!err && timer) {
+					timerList.push(timer.id);
+				}
+				if (timer == null) {
+					callback(null, timerList);
+					db.close();
+				}
+			});
+		});
+	} else {
+		callback(null, []);
+	}
+}
+
+User.prototype.timerListFriends = function(owner, userId, callback) {
+	if (typeof owner != 'undefined' && owner && owner.id == userId) {
+		var query = {
+			owner: {$in: owner.friends_ids},
+			removed: 0,
+			public: 1
+		};
+		var timerList = [];
+		this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
+			if (err) return callback(null);
+			var cursor = db.collection('timers').find(query).sort('last_restart');
+			cursor.each(function(err, timer) {
+				if (!err && timer) {
+					timerList.push(timer.id);
+				}
+				if (timer == null) {
+					callback(null, timerList);
+					db.close();
+				}
+			});
+		});
+	} else {
+		callback(null, []);
+	}
 }
 
 module.exports = exports = User;

@@ -104,11 +104,10 @@ app.configure(function(){
 });
 
 app.get('/', function(req, res) {
-    //console.log(JSON.stringify(req.session.auth.twitter.user));
 	res.render('about', {
 		user: (req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) ? req.session.auth.twitter.user : {},
 		siteName: cfg.siteName,
-		softwareBuild: softwareBuild, // TODO: get from 'software-build' file
+		softwareBuild: softwareBuild,
 		htmlEntities: htmlEntities,
 		activePage: 'about'
 	});
@@ -116,34 +115,18 @@ app.get('/', function(req, res) {
 });
 
 app.get('/db', function(req, res) {
-	User.findById(330157333, function(user) { // No err here!
+	/*User.findById(330157333, function(user) { // No err here!
 		if (user) {
 			res.setHeader('content-type', jsonContentType);
 			res.send(JSON.stringify(user));
 		}
 	});
+	*/
+	Timer.getNextId(function(err, maxId) {
+		res.setHeader('content-type', jsonContentType);
+		res.send(JSON.stringify(maxId));
+	});
 	
-	
-	
-});
-
-app.get('/twifriends', function(req, res) {
-	if (req.session.auth.twitter.user) {
-		
-		user = req.session.auth.twitter.user;
-		//console.log(JSON.stringify(req.session.auth.twitter));
-		
-		if (user.id) {
-			res.setHeader('content-type', jsonContentType);
-			User.updateTwitterFriends(user.id, req.session.auth.twitter.accessToken, req.session.auth.twitter.accessTokenSecret, function(err, user) {
-				if (err) {
-					res.send(err);
-				} else {
-					res.send(user);
-				}
-			});
-		}
-	}
 });
 
 app.get('/t/:id(\\d+)/show', function(req, res) {
@@ -214,13 +197,89 @@ app.get('/u/random/list', function(req, res) {
 	Timer.getHandle('about_3random', function(err, handle) {
 		if (handle) {
 			var nowTimestamp = Math.round(new Date().getTime() / 1000);
-			console.log('handle: ' + JSON.stringify(handle) + ' aging ' + (nowTimestamp - handle.timestamp));
 			res.send(handle.ids);
 		} else {
 			res.send([]);
 		}
 		
 	});
+});
+
+app.get('/u/:screen_name/list', function(req, res) {
+    res.setHeader('content-type', jsonContentType);
+	if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
+		userId = req.session.auth.twitter.user.id;
+	} else {
+		userId = -1;
+	}
+	
+	User.findByName(req.params.screen_name, function(owner) {
+		if (owner) {
+			User.timerList(owner.id, userId, function(err, timerList) {
+				if (!err && timerList) {
+					res.send(timerList);
+				} else {
+					res.send([]);
+				}
+			});
+		} else {
+			res.send([]);
+		}
+	});
+});
+
+app.get('/f/:screen_name/list', function(req, res) {
+    res.setHeader('content-type', jsonContentType);
+	if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
+		userId = req.session.auth.twitter.user.id;
+	} else {
+		userId = -1;
+	}
+	
+	User.findByName(req.params.screen_name, function(owner) {
+		if (owner) {
+			User.timerListFriends(owner, userId, function(err, timerList) {
+				if (!err && timerList) {
+					res.send(timerList);
+				} else {
+					res.send([]);
+				}
+			});
+		} else {
+			res.send([]);
+		}
+	});
+});
+
+app.get('/f/:screen_name/show', function(req, res) {
+    res.setHeader('content-type', jsonContentType);
+	if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
+		userId = req.session.auth.twitter.user.id;
+	} else {
+		userId = -1;
+	}
+	
+	User.findByName(req.params.screen_name, function(owner) {
+		if (owner && owner.id == userId) {
+			res.send(owner.friends_ids);
+		} else {
+			res.send([]);
+		}
+	});
+});
+
+app.get('/u/:screen_name', function(req, res) {
+    User.findByName(req.params.screen_name, function(owner) {
+		res.render('user', {
+			owner: owner,
+			user: (req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) ? req.session.auth.twitter.user : {},
+			siteName: cfg.siteName,
+			softwareBuild: softwareBuild,
+			htmlEntities: htmlEntities,
+			activePage: 'user'
+		});
+	});
+	
 });
 
 app.listen(cfg.httpPort);

@@ -71,7 +71,6 @@ Timer.prototype.values = function(callback) {
 		};
 		this.getOwner(function(user) {
 			if (user) setObject['owner_name'] = user.logged_in;
-			//console.log('setObject ' + JSON.stringify(setObject));
 			callback(null, setObject);
 		});
 		
@@ -114,10 +113,6 @@ Timer.prototype.restartAllowed = function(userId) {
 
 Timer.prototype.editAllowed = function(userId) {
 	return ((userId === this.owner) || ((typeof userId !== 'undefined') && (this.id === -1)));
-}
-
-Timer.prototype.getOwnerName = function() {
-	return 'getOwnerName NYI';
 }
 
 Timer.prototype.restart = function(callback) {
@@ -244,6 +239,45 @@ Timer.saveHandle = function(handleName, setObject, callback) {
 			db.close();
 		});
 	});
+}
+
+Timer.getNextId = function(callback) {
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		db.collection('timers').aggregate([
+			{$group: {
+				_id: 'maxId',
+				maxId: {$max: '$id'}
+			}}
+		], function(err, result) {
+			if (err) return callback(err, null);
+			callback(err, result[0]['maxId']);
+			db.close();
+		});
+	});
+}
+
+Timer.prototype.set = function(label, ownerId, lastRestart, dateSelected) {
+	if (typeof lastRestart != 'undefined' && lastRestart != -1 && lastRestart != '-1' && !isNaN(parseInt(lastRestart))) {
+		this.last_restart = parseInt(lastRestart);
+	}
+	this.name = label.substring(0, 120);
+	this.date_selected = dateSelected ? 1 : 0;
+	this.owner = parseInt(ownerId);
+	this.random = Math.random();
+	this.set = 1;
+	// TODO: this.created must be init on save()
+}
+
+Timer.prototype.setPublic = function(publicVal) {
+	if (this.set == 1) {
+		this.public = publicVal ? 1 : 0;
+	}
+}
+
+Timer.prototype.setGood = function(goodVal) {
+	if (this.set == 1) {
+		this.good = goodVal ? 1 : 0;
+	}
 }
 
 module.exports = exports = Timer;

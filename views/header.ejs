@@ -74,7 +74,7 @@
 		<div id="menubar_navigation" class="nav-collapse collapse">
 			<ul class="nav">
 <% 		if (user && user.screen_name) { %>
-				<li class="<% if (activePage == 'user' && activeId == user.screen_name) { %> active <% } %>">
+				<li class="<% if (activePage == 'user' && user  && owner && user.screen_name == owner.logged_in) { %> active <% } %>">
 					<a href="/u/<%=htmlEntities(user.screen_name) %>"><i class="icon-white icon-user"></i>
 					<span class="hidden-desktop pull-right">
 						<%=htmlEntities(user.screen_name) %>

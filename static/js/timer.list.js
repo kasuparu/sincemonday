@@ -1,10 +1,12 @@
 function timerList(id,element_id) {
+	$(element_id).addClass("loading");
 	$.ajax({
 	  url: '/u/'+id+'/list',
 	  dataType: 'json',
 	  type: 'GET',
 	  success: function (data) {
-	    if (data.length === 0) {
+	    $(element_id).removeClass("loading");
+		if (data.length === 0) {
 	      $(element_id).append('<center><p>У пользователя нет публичных таймеров.</p></center>');
 	    }
 	    data.forEach(function (val) {
@@ -28,13 +30,14 @@ function timerListAppend(val,element_id) {
 }
 
 function timerListFriends(id,element_id) {
+	$(element_id).addClass("loading");
 	$.ajax({
 	  url: '/f/'+id+'/list',
 	  dataType: 'json',
 	  type: 'GET',
 	  success: function (data) {
-	    if (data.length === 0) {
-	      //$(element_id).append('<center><p>У пользователя нет публичных таймеров.</p></center>');
+	    $(element_id).removeClass("loading");
+		if (data.length === 0) {
 	    } else {
 	      $(element_id).append('<hr><div class="row-fluid"><div class="span12"><p class="lead">Таймеры друзей</p></div></div>');
 	    }

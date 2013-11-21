@@ -6,7 +6,9 @@
   height: 6em;
 }
 
-
+.counter-container {
+  min-height: 40px;
+}
 
 div.static-index {
   min-height: 100%;
