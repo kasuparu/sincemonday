@@ -54,7 +54,6 @@ everyauth
 		.consumerKey(cfg.twit.consumerKey)
 		.consumerSecret(cfg.twit.consumerSecret)
 		.findOrCreateUser(function (sess, accessToken, accessSecret, twitUser) {
-			//console.log('everyauth called twitter findOrCreateUser');
 			var promise = this.Promise();
 			User.findOrCreateUser('twitter', accessToken, accessSecret, twitUser, function(err, user) {
 				if (err) return promise.fail(err);
@@ -68,7 +67,6 @@ everyauth
 
 everyauth.everymodule
 	.findUserById(function (id, callback) {
-		//console.log('everyauth called findUserById');
 		User.findById(id, callback);
 	});
 
@@ -115,13 +113,6 @@ app.get('/', function(req, res) {
 });
 
 app.get('/db', function(req, res) {
-	/*User.findById(330157333, function(user) { // No err here!
-		if (user) {
-			res.setHeader('content-type', jsonContentType);
-			res.send(JSON.stringify(user));
-		}
-	});
-	*/
 	Timer.getNextId(function(err, maxId) {
 		res.setHeader('content-type', jsonContentType);
 		res.send(JSON.stringify(maxId));
@@ -235,7 +226,6 @@ app.get('/t/:id(-?\\d+)/set', function(req, res) {
 				}
 				
 				if (timer.editAllowed(userId)) {
-					// Set timer params
 					var label = req.query.name;
 					var goodVal = req.query.good;
 					var publicVal = req.query.public;
