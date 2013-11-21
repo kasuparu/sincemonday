@@ -144,4 +144,106 @@ Timer.prototype.restart = function(callback) {
 	});
 }
 
+Timer.getRandomId = function(callback) {
+	var random = Math.random();
+	
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		if (err) return callback(err, null);
+		
+		db.collection('timers').findOne({public: 1, removed:0, random: {$gte: random}}, {id: 1, _id: 0}, function(err, obj) {
+			if (err) return callback(err, obj);
+			
+			if (obj) {
+				callback(err, obj);
+				db.close();
+			} else {
+				
+				db.collection('timers').findOne({public: 1, removed:0, random: {$lte: random}}, {id: 1, _id: 0}, function(err, obj) {
+					if (err) return callback(err, obj);
+					callback(err, obj);
+					db.close();
+				});
+				
+			}
+		});
+    });
+}
+
+Timer.getHandle = function(handleName, callback) {
+	Timer.findHandle(handleName, function(err, handle) {
+		if (err) return callback(err, handle);
+		if (handle) {
+			var nowTimestamp = Math.round(new Date().getTime() / 1000);
+			if (nowTimestamp - handle.timestamp < 60) {
+				callback(err, handle);
+			} else {
+				Timer.regenerateHandle(handleName, function(err, handle) {
+					if (err) return callback(err, null);
+					callback(err, handle);
+				});
+			}
+		} else {
+			callback(err, handle);
+		}
+	});
+}
+
+Timer.findHandle = function(handleName, callback) {
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		if (err) return callback(err, null);
+		
+		db.collection('handles').findOne({handle: handleName}, function(err, obj) {
+			if (err) return callback(err, obj);
+			callback(err, obj);
+			db.close();
+		});
+    });
+}
+
+Timer.regenerateHandle = function(handleName, callback) {
+	if (handleName == 'about_3random') {
+		var ids = [];
+		var tries = 0;
+		var queue = Timer.config.async.queue(function(object, callback) {
+			Timer.getRandomId(function(err, obj) {
+				tries++;
+				if ((err || !obj) && tries < 10) {
+					queue.push({});
+					return callback();
+				}
+				if (ids.indexOf(obj.id) != -1 && tries < 10) {
+					queue.push({});
+					callback();
+				} else {
+					ids.push(obj.id);
+					callback();
+				}
+			});
+		});
+		queue.drain = function() {
+			var nowTimestamp = Math.round(new Date().getTime() / 1000);
+			Timer.saveHandle(handleName, {timestamp: nowTimestamp, ids: ids}, callback);
+		};
+		
+		queue.push({});
+		queue.push({});
+		queue.push({});
+	} else {
+		Timer.findHandle(handleName, function(err, handle) {
+			if (err) return callback(err, handle);
+			callback(err, handle);
+		});
+	}
+}
+
+Timer.saveHandle = function(handleName, setObject, callback) {
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		db.collection('handles').findAndModify({handle: handleName}, {}, {$set: setObject}, {safe: true, new: true, upsert: true}, function(err, handle) {
+			if (err) return callback(err, null);
+			callback(err, handle);
+			db.close();
+		});
+	});
+}
+
 module.exports = exports = Timer;

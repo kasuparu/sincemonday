@@ -4,6 +4,7 @@ var express = require('express'),
 	env = process.env.NODE_ENV || 'dev',
 	cfg = require('./config.' + env),
 	fs = require('fs'),
+	async = require('async'),
 	everyauth = require('everyauth'),
 	MongoStore = require('connect-mongo')(express),
 	MongoDB = require('mongodb'),
@@ -27,7 +28,8 @@ var express = require('express'),
 		MongoDB: MongoDB,
 		cfg: cfg,
 		twitter: twitter,
-		User: User
+		User: User,
+		async: async
 	}),
 	htmlEntities = function(str) {
 		return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -205,6 +207,20 @@ app.get('/t/:id(\\d+)/restart', function(req, res) {
 			}
 		});
 	};
+});
+
+app.get('/u/random/list', function(req, res) {
+    res.setHeader('content-type', jsonContentType);
+	Timer.getHandle('about_3random', function(err, handle) {
+		if (handle) {
+			var nowTimestamp = Math.round(new Date().getTime() / 1000);
+			console.log('handle: ' + JSON.stringify(handle) + ' aging ' + (nowTimestamp - handle.timestamp));
+			res.send(handle.ids);
+		} else {
+			res.send([]);
+		}
+		
+	});
 });
 
 app.listen(cfg.httpPort);
