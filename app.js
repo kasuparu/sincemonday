@@ -63,7 +63,7 @@ everyauth
 		})
 		.entryPath('/auth/twitter')
 		.callbackPath('/auth/twitter/callback')
-		.redirectPath('/');
+		.redirectPath('/me');
 
 everyauth.everymodule
 	.findUserById(function (id, callback) {
@@ -112,12 +112,13 @@ app.get('/', function(req, res) {
 	
 });
 
-app.get('/db', function(req, res) {
-	Timer.getNextId(function(err, maxId) {
-		res.setHeader('content-type', jsonContentType);
-		res.send(JSON.stringify(maxId));
-	});
-	
+app.get('/me', function(req, res) {
+	if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
+		userName = req.session.auth.twitter.user.screen_name;
+	} else {
+		userName = '';
+	}
+	res.redirect(userName ? '/u/' + userName : '/');
 });
 
 app.get('/t/:id(-?\\d+)/show', function(req, res) {
