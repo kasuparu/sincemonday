@@ -1,0 +1,15 @@
+<% include header %>
+	<div class="row-fluid">
+		<div class="span12">
+			<p class="lead">
+				Owner Screen Name
+			</p>
+		</div>
+	</div>
+	<div class="container-fluid counter-container" id="countercontainer" ng-controller="timerListController">
+			<div ng-repeat="item in timers">
+				<div timer="item"></div>
+			</div>
+	</div>
+	
+<% include footer %> 

@@ -109,7 +109,6 @@ app.get('/', function(req, res) {
 		htmlEntities: htmlEntities,
 		activePage: 'about'
 	});
-	
 });
 
 app.get('/me', function(req, res) {
@@ -276,7 +275,7 @@ app.get('/u/random/list', function(req, res) {
 	});
 });
 
-app.get('/u/:screen_name/list', function(req, res) {
+app.get('/u/:screen_name/:action(list|timers)', function(req, res) {
     res.setHeader('content-type', jsonContentType);
 	if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
 		userId = req.session.auth.twitter.user.id;
@@ -286,7 +285,8 @@ app.get('/u/:screen_name/list', function(req, res) {
 	
 	User.findByName(req.params.screen_name, function(owner) {
 		if (owner) {
-			User.timerList(owner.id, userId, function(err, timerList) {
+			var action = req.params.action == 'list' ? 'timerList' : 'timers';
+			User[action](owner.id, userId, function(err, timerList) {
 				if (!err && timerList) {
 					res.send(timerList);
 				} else {
@@ -351,6 +351,16 @@ app.get('/u/:screen_name', function(req, res) {
 		});
 	});
 	
+});
+
+app.get('/ng', function(req, res) {
+	res.render('ng', {
+		user: (req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) ? req.session.auth.twitter.user : {},
+		siteName: cfg.siteName,
+		softwareBuild: softwareBuild,
+		htmlEntities: htmlEntities,
+		activePage: 'about'
+	});
 });
 
 app.listen(cfg.httpPort);

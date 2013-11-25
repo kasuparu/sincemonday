@@ -164,4 +164,40 @@ User.prototype.timerListFriends = function(owner, userId, callback) {
 	}
 }
 
+User.prototype.timers = function(ownerId, userId, callback) {
+	if (typeof ownerId != 'undefined') {
+		if (ownerId == userId) {
+			var query = {
+				owner: ownerId,
+				removed: 0,
+			};
+		} else {
+			var query = {
+				owner: ownerId,
+				removed: 0,
+				public: 1
+			};
+		}
+		var timerList = [];
+		this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
+			if (err) return callback(null);
+			var cursor = db.collection('timers').find(query).sort('last_restart');
+			cursor.each(function(err, timer) {
+				if (!err && timer) {
+					timerList.push(timer);
+				}
+				if (timer == null) {
+					if (ownerId == userId) {
+						timerList.push({id: -1});
+					}
+					callback(null, timerList);
+					db.close();
+				}
+			});
+		});
+	} else {
+		callback(null, []);
+	}
+}
+
 module.exports = exports = User;
