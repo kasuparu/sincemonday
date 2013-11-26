@@ -102,16 +102,16 @@ User.prototype.findByName = function(screenName, callback) {
     });
 }
 
-User.prototype.timerList = function(ownerId, userId, callback) {
-	if (typeof ownerId != 'undefined') {
-		if (ownerId == userId) {
+User.prototype.timerList = function(owner, userId, callback) {
+	if (typeof owner != 'undefined' && owner && owner.id) {
+		if (owner.id == userId) {
 			var query = {
-				owner: ownerId,
+				owner: owner.id,
 				removed: 0,
 			};
 		} else {
 			var query = {
-				owner: ownerId,
+				owner: owner.id,
 				removed: 0,
 				public: 1
 			};
@@ -122,10 +122,11 @@ User.prototype.timerList = function(ownerId, userId, callback) {
 			var cursor = db.collection('timers').find(query).sort('last_restart');
 			cursor.each(function(err, timer) {
 				if (!err && timer) {
+					timer.owner_name = owner.logged_in;
 					timerList.push(timer.id);
 				}
 				if (timer == null) {
-					if (ownerId == userId) {
+					if (owner.id == userId) {
 						timerList.push(-1);
 					}
 					callback(null, timerList);
@@ -164,16 +165,16 @@ User.prototype.timerListFriends = function(owner, userId, callback) {
 	}
 }
 
-User.prototype.timers = function(ownerId, userId, callback) {
-	if (typeof ownerId != 'undefined') {
-		if (ownerId == userId) {
+User.prototype.timers = function(owner, userId, callback) {
+	if (typeof owner != 'undefined' && owner && owner.id) {
+		if (owner.id == userId) {
 			var query = {
-				owner: ownerId,
+				owner: owner.id,
 				removed: 0,
 			};
 		} else {
 			var query = {
-				owner: ownerId,
+				owner: owner.id,
 				removed: 0,
 				public: 1
 			};
@@ -187,9 +188,35 @@ User.prototype.timers = function(ownerId, userId, callback) {
 					timerList.push(timer);
 				}
 				if (timer == null) {
-					if (ownerId == userId) {
+					if (owner.id == userId) {
 						timerList.push({id: -1});
 					}
+					callback(null, timerList);
+					db.close();
+				}
+			});
+		});
+	} else {
+		callback(null, []);
+	}
+}
+
+User.prototype.timersFriends = function(owner, userId, callback) {
+	if (typeof owner != 'undefined' && owner && owner.id == userId) {
+		var query = {
+			owner: {$in: owner.friends_ids},
+			removed: 0,
+			public: 1
+		};
+		var timerList = [];
+		this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
+			if (err) return callback(null);
+			var cursor = db.collection('timers').find(query).sort('last_restart');
+			cursor.each(function(err, timer) {
+				if (!err && timer) {
+					timerList.push(timer);
+				}
+				if (timer == null) {
 					callback(null, timerList);
 					db.close();
 				}
