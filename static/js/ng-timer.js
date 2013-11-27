@@ -472,12 +472,7 @@ timerApp
 			scope: true,
 			controller: 'timerTwitterLinkController',
 			template: '<a ng-click="openTweetWindow()" class="twitter-share-button btn btn-inverse"><img src="https://twitter.com/favicons/favicon.ico"> Твитнуть</a>',
-			replace: true,
-			link: function(scope, element) {
-				element.bind('$destroy', function() {
-					scope.timeoutStop();
-				});
-			}
+			replace: true
 		}
 	}) 
 	.directive('listMessage', function() {
