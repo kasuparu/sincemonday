@@ -122,7 +122,6 @@ User.prototype.timerList = function(owner, userId, callback) {
 			var cursor = db.collection('timers').find(query).sort('last_restart');
 			cursor.each(function(err, timer) {
 				if (!err && timer) {
-					timer.owner_name = owner.logged_in;
 					timerList.push(timer.id);
 				}
 				if (timer == null) {
@@ -185,6 +184,9 @@ User.prototype.timers = function(owner, userId, callback) {
 			var cursor = db.collection('timers').find(query).sort('last_restart');
 			cursor.each(function(err, timer) {
 				if (!err && timer) {
+					timer.set = 1;
+					timer.owner_name = owner.logged_in || owner.screen_name;
+					timer.can_edit = owner.id == userId ? 1 : 0;
 					timerList.push(timer);
 				}
 				if (timer == null) {
@@ -209,15 +211,18 @@ User.prototype.timersFriends = function(owner, userId, callback) {
 			public: 1
 		};
 		var timerList = [];
+		var target = this;
 		this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
 			if (err) return callback(null);
 			var cursor = db.collection('timers').find(query).sort('last_restart');
 			cursor.each(function(err, timer) {
 				if (!err && timer) {
+					timer.set = 1
 					timerList.push(timer);
 				}
 				if (timer == null) {
-					callback(null, timerList);
+					target.timerListFillNames(timerList, callback);
+					//callback(null, timerList);
 					db.close();
 				}
 			});
@@ -225,6 +230,37 @@ User.prototype.timersFriends = function(owner, userId, callback) {
 	} else {
 		callback(null, []);
 	}
+}
+
+User.prototype.timerListFillNames = function(timerList, callback) {
+	// Get owner id list as hash keys
+	var ownerIds = [];
+	timerList.forEach(function(v) {
+		if (ownerIds.indexOf(v.owner) == -1) {
+			ownerIds.push(v.owner);
+		}
+	});
+	
+	// Get users from DB
+	var ownerNames = {};
+	this.config.MongoDB.MongoClient.connect(this.config.cfg.mongo.uri + '/' + this.config.cfg.mongo.db + (this.config.cfg.mongo.options || ''), function(err, db) {
+		if (err) return callback(null);
+		var cursor = db.collection('users').find({id: {$in: ownerIds}}, {_id: 0, id: 1, screen_name: 1, logged_in: 1});
+		cursor.each(function(err, user) {
+			// Fill hashmap with user names
+			if (!err && user) {
+				ownerNames[user.id] = user.logged_in || user.screen_name;
+			}
+			if (user == null) {
+				// Fill timers with user names
+				timerList.forEach(function(t) {
+					t.owner_name = ownerNames[t.owner];
+				});
+				callback(null, timerList);
+				db.close();
+			}
+		});
+	});
 }
 
 module.exports = exports = User;

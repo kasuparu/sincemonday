@@ -14,20 +14,20 @@ timerApp.config(['$routeProvider',
 						'</div>' +
 					'</div>' + 
 					'<div class="container-fluid counter-container" id="countercontainer" ng-class="{\'loading\': loading}">' +
-						'<div list-message="message"></div>' +
-						'<div ng-repeat="n in timers.range()" class="row-fluid" id="countercontainerrow{{n}}">' +
-							'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="counter{{item.id}}"></div>' +
+						'<div ng-if="message" list-message="message"></div>' +
+						'<div ng-repeat="n in timers.range()" class="row-fluid" id="countercontainerrow{{$index}}">' +
+							'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="concat(\'counter\', item.id)"></div>' +
 						'</div>' +
 					'</div>' +
-					'<div class="row-fluid">' +
+					'<hr ng-if="headerTextFriends">' + 
+					'<div class="row-fluid" ng-if="headerTextFriends">' +
 						'<div class="span12">' +
 							'<p class="lead">{{headerTextFriends}}</p>' +
 						'</div>' +
 					'</div>' + 
-					'<hr>' + 
 					'<div class="container-fluid counter-container" id="friendcountercontainer" ng-class="{\'loading\': loadingFriends}">' +
-						'<div ng-repeat="n in friendsTimers.range()" class="row-fluid" id="friendcountercontainerrow{{n}}">' +
-							'<div ng-repeat="item in friendsTimers.slice(n, n+3)" timer="item" id="friendcounter{{item.id}}"></div>' +
+						'<div ng-repeat="n in friendsTimers.range()" class="row-fluid" id="friendcountercontainerrow{{$index}}">' +
+							'<div ng-repeat="item in friendsTimers.slice(n, n+3)" timer="item" id="concat(\'friendcounter\', item.id)"></div>' +
 						'</div>' +
 					'</div>'
 			})
@@ -57,8 +57,13 @@ timerApp.controller('timerListController', ['$scope', '$routeParams', 'timerList
 		}
 	}
 	
+	$scope.concat = function() {
+		return Array.prototype.slice.call(arguments).join('');
+	}
+	
 	timerListFactory.getTimerListAsync('u', $routeParams.screen_name, function(results) {
 		$scope.loading = false;
+		$scope.headerText = $routeParams.screen_name;
 		if (results.length === 0) {
 			$scope.timers = [];
 			$scope.message = {'text': 'У пользователя нет публичных таймеров.'};
@@ -86,8 +91,40 @@ timerApp.factory('timerFactory', function($http) {
 	return {
 		getTimerAsync: function(id, callback) {
 			$http.get('/t/' + id + '/show').success(callback);
-		},
-		
+		}
+	};
+});
+
+timerApp.controller('timerController', ['$scope', 'timerFactory', function($scope, $location, timerFactory) {
+	$scope.show = function(id) {
+		$scope.loading = true;
+		timerFactory.getTimerAsync(id, function(results) {
+			$scope.loading = false;
+			$scope.timer = results;
+		});
+	};
+	$scope.edit = function() {
+		$scope.editor = true;
+		$scope.editableTimer = $scope.timer;
+	};
+	
+	$scope.save = function() {
+		$scope.editor = false;
+		$scope.timer = $scope.editableTimer;
+	};
+	
+	$scope.cancel = function() {
+		$scope.editor = false;
+		$scope.editableTimer = $scope.timer;
+	};
+	
+	$scope.getUrl = function () {
+		$location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
+	}
+}]);
+
+timerApp.factory('timerTimeFactory', function($http) {
+	return {
 		timerGetTime: function(last_restart, format, debug) {
 			debug = debug || 0;
 			format = format || 0;
@@ -198,33 +235,43 @@ timerApp.factory('timerFactory', function($http) {
 			}
 			return time;
 		},
-		
-		
 	};
 });
 
-timerApp.controller('timerController', ['$scope', 'timerFactory', function($scope, timerFactory) {
-	$scope.show = function(id) {
-		$scope.loading = true;
-		timerFactory.getTimerAsync(id, function(results) {
-			$scope.loading = false;
-			$scope.timer = results;
-		});
-	};
-	$scope.edit = function() {
-		$scope.editor = true;
-		$scope.editableTimer = $scope.timer;
+timerApp.controller('timerTimeController', ['$scope', '$timeout', 'timerTimeFactory', function($scope, $timeout, timerTimeFactory) {
+	var stop;
+	var time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
+	$scope.time = time;
+	$scope.timeoutStart = function() {
+		stop = $timeout(function() {
+			time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
+			
+			if (time != $scope.time) {
+				$scope.time = time;
+			}
+		}, 1000);
+	}
+	$scope.timeoutStart();
+	
+	$scope.timeoutStop = function() {
+		$timeout.cancel(stop);
+	}
+}]);
+
+timerApp.controller('timerTwitterLinkController', ['$scope', '$window', 'timerTimeFactory', function($scope, $window, timerTimeFactory) {
+	$scope.createLink = function () {
+		var link = 'https://twitter.com/share?url=' + $scope.getUrl() + '&text=' +
+			($scope.timer.owner_name ? '@' + $scope.timer.owner_name + ': ' : '') +
+			$scope.timer.name + ' ' + time[0] + ' ' + time[1] + 
+			(time[3] != '' ? ' ' + time[2] + ' ' + time[3] : '');
+		console.log('created link to ' + link);
+		return link;
 	};
 	
-	$scope.save = function() {
-		$scope.editor = false;
-		$scope.timer = $scope.editableTimer;
-	};
-	
-	$scope.cancel = function() {
-		$scope.editor = false;
-		$scope.editableTimer = $scope.timer;
-	};
+	$scope.openTweetWindow = function() {
+		console.log('trying to open window to ' + $scope.createLink());
+		$window.open($scope.createLink());
+	}
 }]);
 
 timerApp
@@ -266,6 +313,9 @@ timerApp
 				items+='</center></div>';
 				items+='<div class="" id="'+element_id_time+'"><center>';
 				items+='</center></div>';
+				
+				
+				
 				items+='<div class=""><center>';
 				if (data.can_edit == 1 || data.id == 0) {
 				  items+='<a class="btn btn-danger" href="#" id="'+restart_link+'"><i class="icon-white icon-repeat"></i> Сброс</a>';
@@ -282,6 +332,9 @@ timerApp
 				  items+=' <a href="#" id="'+edit_link+'" class="btn">&nbsp;<i class="icon-pencil"></i>&nbsp;</a>';
 				}
 				items+='</center></div>';
+				
+				
+				
 				$(element_id).html(items);
 				timerShowTime(data.last_restart,'#'+element_id_time,0,debug);
 				timerTwitterButtonHref('#'+twitter_link,url,data.owner_name,data.name,data.last_restart);
@@ -339,11 +392,12 @@ timerApp
 			restrict: 'A',
 			scope: {
 				timer: '=timer',
-				editor: '@editor'
+				editor: '@editor',
+				elementId: '=id'
 			},
 			controller: 'timerController',
-			template:
-				'<div ng-class="{' +
+			template: '' +
+				'<div ng-if="timer.set && !timer.denied" ng-class="{' +
 					'\'loading\': loading,' +
 					'\'timer-good\': timer.good == 1,' +
 					'\'timer-bad\': timer.good == 0,' +
@@ -363,16 +417,69 @@ timerApp
 					'<div class="icon-name" ng-if="timer.owner_name">' +
 						'<a ng-href="/u/{{timer.owner_name}}">{{timer.owner_name}}</a>' +
 					'</div>' +
-					'<a ng-click="show(timer.id)">{{timer.name}}</a>' +
-					'<a ng-show="editor" ng-click="save()">Save</a>' +
-					'<a ng-show="editor" ng-click="cancel()">Cancel</a>' +
-					'<a ng-hide="editor" ng-click="edit()">Edit</a>' +
-				'</div>',
-				
-			transclude: true,
+					'<div class=""><center>{{timer.name}}</center></div>' +
+					'<div class="" id="{{elementId}}time" timer-time="timer.last_restart"></div>' + // TIME HERE
+					'<div class=""><center>' + 
+						'<a class="btn btn-danger" ng-if="timer.can_edit || timer.id == 0" ng-click="restart()"><i class="icon-white icon-repeat"></i> Сброс</a>' + 
+						' <a ng-if="timer.public == 1" timer-twitter-link></a>' +
+						' <a class="btn" ng-click="edit()">&nbsp;<i class="icon-pencil"></i>&nbsp;</a>' +
+					'</center></div>' + 
+				'</div>'/* +
+				'</div>' +
+				'<div class="" ng-if="timer.set && timer.denied" ng-class="{\'loading\': loading}"><center>Доступ к таймеру запрещён</center></div>'
+				'<div class="" ng-if="!timer.set" class="span4 well timer" editor="false" ng-class="{\'loading\': loading}">' +
+					'<div class=""><p><center>' +
+						'<h3>Создать таймер</h3>' +
+					'</center></p></div>' +
+					'<div class=""><center>' +
+						' <a class="btn btn-success btn-large" href="#" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a>' +
+					'</center></div>' +
+					'<div class=""><p><center> </center></p></div>' +
+				'</div>'*/,
+			
+				//'<a ng-click="show(timer.id)">{{timer.name}}</a>' +
+					//'<a ng-show="editor" ng-click="save()">Save</a>' +
+					//'<a ng-show="editor" ng-click="cancel()">Cancel</a>' +
+					//'<a ng-hide="editor" ng-click="edit()">Edit</a>' +
+			//transclude: true,
 			replace: true
 		};
 	})
+	.directive('timerTime', function() {
+		return {
+			restrict: 'A',
+			scope: {
+				lastRestart: '=timerTime'
+			},
+			controller: 'timerTimeController',
+			template: '' +
+				'<div><center>' +
+					'<p><center>' +
+						'<h1>{{time.0}}<small> {{time.1}} {{time.2}} {{time.3}}</small></h1>' +
+					'</center></p>' +
+				'</center></div>',
+			replace: true,
+			link: function(scope, element) {
+				element.bind('$destroy', function() {
+					scope.timeoutStop();
+				});
+			}
+		}
+	})
+	.directive('timerTwitterLink', function() {
+		return {
+			restrict: 'A',
+			scope: true,
+			controller: 'timerTwitterLinkController',
+			template: '<a ng-click="openTweetWindow()" class="twitter-share-button btn btn-inverse"><img src="https://twitter.com/favicons/favicon.ico"> Твитнуть</a>',
+			replace: true,
+			link: function(scope, element) {
+				element.bind('$destroy', function() {
+					scope.timeoutStop();
+				});
+			}
+		}
+	}) 
 	.directive('listMessage', function() {
 		return {
 			restrict: 'A',
