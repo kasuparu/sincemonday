@@ -121,7 +121,7 @@ Timer.prototype.restart = function(callback) {
 		db.collection('timers').findAndModify({id: target.id}, {}, {$set: {last_restart: nowTimestamp}}, {safe: true, new: true}, function(err, timer) {
 			if (err) return callback(err, null);
 			if (timer) {
-				Timer.recordUpdate(timer, callback);
+				Timer.recordUpdate(new Timer(timer), callback);
 				db.close();
 			}
 			else {

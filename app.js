@@ -168,7 +168,16 @@ app.get('/t/:id(\\d+)/restart', function(req, res) {
 				if (timer.restartAllowed(userId)) {
 					timer.restart(function(err, timer) {
 						if (!err && timer) {
-							res.send({ok: 1});
+							if (timer.editAllowed(userId)) {
+								timer.showJsonCanEdit(function(err, timer) {
+									res.send(err || timer);
+								});
+								
+							} else {
+								timer.showJson(function(err, timer) {
+									res.send(err || timer);
+								});
+							}
 						} else {
 							res.send({ok: 0});
 						}

@@ -1,41 +1,69 @@
+// attach the .compare method to Array's prototype to call it on any array
+Array.prototype.compare = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+
+    // compare lengths - can save a lot of time
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0; i < this.length; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].compare(array[i]))
+                return false;
+        }
+        else if (this[i] != array[i]) {
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;
+        }
+    }
+    return true;
+}
+
 var timerApp = angular.module('timerApp', [
 	'ngRoute'
 ]);
 
-timerApp.config(['$routeProvider',
-	function($routeProvider) {
-		$routeProvider
-			.when('/u/:screen_name/', {
-				controller: 'timerListController',
-				template: '' + 
-					'<div class="row-fluid">' +
-						'<div class="span12">' +
-							'<p class="lead">{{headerText}}</p>' +
+timerApp
+	.config(['$routeProvider', '$locationProvider',
+		function($routeProvider, $locationProvider) {
+			$locationProvider.hashPrefix('!');
+			
+			$routeProvider
+				.when('/u/:screen_name/', {
+					controller: 'timerListController',
+					template: '' + 
+						'<div class="row-fluid">' +
+							'<div class="span12">' +
+								'<p class="lead">{{headerText}}</p>' +
+							'</div>' +
+						'</div>' + 
+						'<div class="container-fluid counter-container" id="countercontainer" ng-class="{\'loading\': loading}">' +
+							'<div ng-if="message" list-message="message"></div>' +
+							'<div ng-repeat="n in timers.range()" class="row-fluid" id="countercontainerrow{{$index}}">' +
+								'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="concat(\'counter\', item.id)"></div>' +
+							'</div>' +
 						'</div>' +
-					'</div>' + 
-					'<div class="container-fluid counter-container" id="countercontainer" ng-class="{\'loading\': loading}">' +
-						'<div ng-if="message" list-message="message"></div>' +
-						'<div ng-repeat="n in timers.range()" class="row-fluid" id="countercontainerrow{{$index}}">' +
-							'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="concat(\'counter\', item.id)"></div>' +
-						'</div>' +
-					'</div>' +
-					'<hr ng-if="headerTextFriends">' + 
-					'<div class="row-fluid" ng-if="headerTextFriends">' +
-						'<div class="span12">' +
-							'<p class="lead">{{headerTextFriends}}</p>' +
-						'</div>' +
-					'</div>' + 
-					'<div class="container-fluid counter-container" id="friendcountercontainer" ng-class="{\'loading\': loadingFriends}">' +
-						'<div ng-repeat="n in friendsTimers.range()" class="row-fluid" id="friendcountercontainerrow{{$index}}">' +
-							'<div ng-repeat="item in friendsTimers.slice(n, n+3)" timer="item" id="concat(\'friendcounter\', item.id)"></div>' +
-						'</div>' +
-					'</div>'
-			})
-			.otherwise({
-				redirectTo: '/' // Change that!
-			});
-	}
-]);
+						'<hr ng-if="headerTextFriends">' + 
+						'<div class="row-fluid" ng-if="headerTextFriends">' +
+							'<div class="span12">' +
+								'<p class="lead">{{headerTextFriends}}</p>' +
+							'</div>' +
+						'</div>' + 
+						'<div class="container-fluid counter-container" id="friendcountercontainer" ng-class="{\'loading\': loadingFriends}">' +
+							'<div ng-repeat="n in friendsTimers.range()" class="row-fluid" id="friendcountercontainerrow{{$index}}">' +
+								'<div ng-repeat="item in friendsTimers.slice(n, n+3)" timer="item" id="concat(\'friendcounter\', item.id)"></div>' +
+							'</div>' +
+						'</div>'
+				})
+				.otherwise({
+					redirectTo: '/' // Change that!
+				});
+		}
+	]);
 
 timerApp.factory('timerListFactory', function($http) {
 	return {
@@ -87,15 +115,18 @@ timerApp.controller('timerListController', ['$scope', '$routeParams', 'timerList
 	});
 }]);
 
-timerApp.factory('timerFactory', function($http) {
+timerApp.factory('timerFactory', function($http, $location) {
 	return {
 		getTimerAsync: function(id, callback) {
 			$http.get('/t/' + id + '/show').success(callback);
+		},
+		restartTimerAsync: function(id, callback) {
+			$http.get('/t/' + id + '/restart').success(callback);
 		}
 	};
 });
 
-timerApp.controller('timerController', ['$scope', 'timerFactory', function($scope, $location, timerFactory) {
+timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', function($scope, $location, timerFactory) {
 	$scope.show = function(id) {
 		$scope.loading = true;
 		timerFactory.getTimerAsync(id, function(results) {
@@ -118,8 +149,18 @@ timerApp.controller('timerController', ['$scope', 'timerFactory', function($scop
 		$scope.editableTimer = $scope.timer;
 	};
 	
+	$scope.restart = function() {
+		if ($scope.timer && 'undefined' !== typeof $scope.timer.id) {
+			$scope.loading = true;
+			timerFactory.restartTimerAsync($scope.timer.id, function(results) {
+				$scope.loading = false;
+				$scope.timer = results;
+			});
+		}
+	};
+	
 	$scope.getUrl = function () {
-		$location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
+		return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
 	}
 }]);
 
@@ -242,152 +283,43 @@ timerApp.controller('timerTimeController', ['$scope', '$timeout', 'timerTimeFact
 	var stop;
 	var time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
 	$scope.time = time;
-	$scope.timeoutStart = function() {
-		stop = $timeout(function() {
-			time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
-			
-			if (time != $scope.time) {
-				$scope.time = time;
-			}
-		}, 1000);
+	
+	var modTime = function() {
+		time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
+		
+		if (time.compare($scope.time) === false) {
+			$scope.time = time;
+		}
 	}
-	$scope.timeoutStart();
+	
+	$scope.onTimeout = function() {
+		modTime();
+		stop = $timeout($scope.onTimeout, 1000);
+	}
+	stop = $timeout($scope.onTimeout, 1000);
 	
 	$scope.timeoutStop = function() {
 		$timeout.cancel(stop);
 	}
 }]);
 
-timerApp.controller('timerTwitterLinkController', ['$scope', '$window', 'timerTimeFactory', function($scope, $window, timerTimeFactory) {
+timerApp.controller('timerTwitterLinkController', ['$scope', '$window', '$location', 'timerTimeFactory', function($scope, $window, $location, timerTimeFactory) {
+	$scope.getUrl = function () {
+		return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
+	}
+	
 	$scope.createLink = function () {
+		var time = timerTimeFactory.timerGetTime($scope.timer.last_restart, 0, 0);
 		var link = 'https://twitter.com/share?url=' + $scope.getUrl() + '&text=' +
 			($scope.timer.owner_name ? '@' + $scope.timer.owner_name + ': ' : '') +
 			$scope.timer.name + ' ' + time[0] + ' ' + time[1] + 
 			(time[3] != '' ? ' ' + time[2] + ' ' + time[3] : '');
-		console.log('created link to ' + link);
 		return link;
 	};
-	
-	$scope.openTweetWindow = function() {
-		console.log('trying to open window to ' + $scope.createLink());
-		$window.open($scope.createLink());
-	}
 }]);
 
 timerApp
 	.directive('timer', function() {
-		/*var items = '';
-		if (data.set == 1) {
-			data.denied = data.denied || 0;
-			if (data.denied == 0) {
-				var debug = 0;
-				var items = '';
-				var element_id_time = element_id.replace('#','')+'time';
-				var restart_link = element_id.replace('#','')+'restart';
-				var edit_link = element_id.replace('#','')+'edit';
-				var twitter_link = element_id.replace('#','')+'twitter';
-				// Good
-				if (data.good == 1) {
-				  $(element_id).removeClass("timer-good timer-bad timer-neutral").addClass("timer-good");
-				  items+='<div class="icon-good"><i class="icon-thumbs-up"></i></div>';
-				} else if (data.good == 0) {
-				  $(element_id).removeClass("timer-good timer-bad timer-neutral").addClass("timer-bad");
-				  items+='<div class="icon-good"><i class="icon-thumbs-down"></i></div>';
-				} else {
-				  $(element_id).removeClass("timer-good timer-bad timer-neutral").addClass("timer-neutral");
-				  items+='<div class="icon-good"><i class="icon-adjust"></i></div>';
-				}
-				// Public
-				if (data.public == 1) {
-				  $(element_id).removeClass("timer-public timer-private").addClass("timer-public");
-				  items+='<div class="icon-public"><i class="icon-eye-open"></i></div>';
-				} else if (data.public == 0) {
-				  $(element_id).removeClass("timer-public timer-private").addClass("timer-private");
-				  items+='<div class="icon-public"><i class="icon-eye-close"></i></div>';
-				}
-				if (data.owner_name) {
-				  items+='<div class="icon-name"><a href="/u/'+data.owner_name+'">'+data.owner_name+'</a></div>';
-				}
-				items+='<div class=""><center>';
-				items+=data.name;
-				items+='</center></div>';
-				items+='<div class="" id="'+element_id_time+'"><center>';
-				items+='</center></div>';
-				
-				
-				
-				items+='<div class=""><center>';
-				if (data.can_edit == 1 || data.id == 0) {
-				  items+='<a class="btn btn-danger" href="#" id="'+restart_link+'"><i class="icon-white icon-repeat"></i> Сброс</a>';
-				}
-				if (data.public == 1) {
-				  if (data.owner_name != null) {
-					var url='http://'+window.location.hostname+'/u/'+data.owner_name;
-				  } else {
-					var url='http://'+window.location.hostname;
-				  }
-				  items+=' <a href="" class="twitter-share-button btn btn-inverse" target="_blank" id="'+twitter_link+'"><img src="https://twitter.com/favicons/favicon.ico"> Твитнуть</a>';
-				}
-				if (data.can_edit == 1) {
-				  items+=' <a href="#" id="'+edit_link+'" class="btn">&nbsp;<i class="icon-pencil"></i>&nbsp;</a>';
-				}
-				items+='</center></div>';
-				
-				
-				
-				$(element_id).html(items);
-				timerShowTime(data.last_restart,'#'+element_id_time,0,debug);
-				timerTwitterButtonHref('#'+twitter_link,url,data.owner_name,data.name,data.last_restart);
-				var stop_timer = setInterval(
-				  function() {
-					timerShowTime(data.last_restart,'#'+element_id_time);
-					timerTwitterButtonHref('#'+twitter_link,url,data.owner_name,data.name,data.last_restart);
-				  },1000
-				);
-				if (data.can_edit == 1 || data.id == 0) {
-				  $('#'+restart_link).click(function() {
-					  timerRestart(data.id,'#'+element_id.replace('#',''),stop_timer);
-					  return false;
-				  });
-				}
-				if (data.can_edit == 1) {
-				  $('#'+edit_link).click(function() {
-					  timerSet(data.id,element_id.replace('#',''),stop_timer);
-					  return false;
-				  });
-				}
-			} else {
-				var items = '';
-				items+='<div class=""><center>';
-				items+='Доступ к таймеру запрещён';
-				items+='</center></div>';
-				$(element_id).html(items);
-			}
-	    } else {
-			var items = '';
-			var edit_link = element_id.replace('#','')+'edit';
-			items+='<div class=""><p><center>';
-			items+='<h3>Создать таймер</h3>';
-			items+='</center></p></div>';
-			items+='<div class=""><center>';
-			if (data.id == -1) {
-				items+=' <a class="btn btn-success btn-large" href="#" id="'+edit_link+'"><i class="icon-white icon-plus"></i> Добавить</a>';
-			}
-			items+='</center></div>';
-			items+='<div class=""><p><center>';
-			items+=' ';
-			items+='</center></p></div>';
-			$(element_id).html(items);
-			$(element_id).removeClass("timer-good timer-bad timer-neutral").addClass("timer-neutral");
-			if (data.id == -1) {
-				$('#'+edit_link).click(function() {
-					timerSet(data.id,element_id.replace('#',''));
-					return false;
-				});
-			}
-	    }*/
-		
-		
 		return {
 			restrict: 'A',
 			scope: {
@@ -471,7 +403,7 @@ timerApp
 			restrict: 'A',
 			scope: true,
 			controller: 'timerTwitterLinkController',
-			template: '<a ng-click="openTweetWindow()" class="twitter-share-button btn btn-inverse"><img src="https://twitter.com/favicons/favicon.ico"> Твитнуть</a>',
+			template: '<a ng-href="{{createLink()}}" target="_blank" class="twitter-share-button btn btn-inverse"><img src="https://twitter.com/favicons/favicon.ico"> Твитнуть</a>',
 			replace: true
 		}
 	}) 
