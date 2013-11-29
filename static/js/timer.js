@@ -445,14 +445,12 @@ function timerShowForm(data,element_id) {
 	if (data.good == 1) {
 	  items+='checked="checked"';
 	}
-	//items+='> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span>/<span class="timer-bad background-bad"><i class="icon-thumbs-down"></i></span></label>';
 	items+='> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span></label>';
 	items+='&nbsp;<label class="checkbox inline" rel="popover" data-placement="bottom" data-title="Виден всем">';
 	items+='<input type="checkbox" id="'+public_link+'" value="public"';
 	if (data.public == 1) {
 	  items+='checked="checked"';
 	}
-	//items+='> <i class="icon-eye-open"></i>/<i class="icon-eye-close"></i></label>';
 	items+='> <i class="icon-eye-open"></i></label>';
 	items+='</center></div>';
 	items+='</form>';

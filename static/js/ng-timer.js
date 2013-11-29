@@ -329,45 +329,41 @@ timerApp
 			},
 			controller: 'timerController',
 			template: '' +
-				'<div ng-if="timer.set && !timer.denied" ng-class="{' +
+				'<div ng-class="{' +
 					'\'loading\': loading,' +
-					'\'timer-good\': timer.good == 1,' +
-					'\'timer-bad\': timer.good == 0,' +
-					'\'timer-neutral\': (timer.good != 1) && (timer.good != 0),' +
-					'\'timer-public\': timer.public == 1,' +
-					'\'timer-private\': timer.public == 0' +
+					'\'timer-good\': !timer.denied && timer.good == 1,' +
+					'\'timer-bad\': !timer.denied && timer.good == 0,' +
+					'\'timer-neutral\': !timer.denied && (timer.good != 1) && (timer.good != 0),' +
+					'\'timer-public\': !timer.denied && timer.public == 1,' +
+					'\'timer-private\': !timer.denied && timer.public == 0' +
 				'}" class="span4 well timer" editor="false">' +
-					'<div class="icon-good"><i ng-class="{' +
+					/* Timer show */
+					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class="icon-good"><i ng-class="{' +
 						'\'icon-thumbs-up\': timer.good == 1,' +
 						'\'icon-thumbs-down\': timer.good == 0,' +
 						'\'icon-adjust\': (timer.good != 1) && (timer.good != 0)' +
 					'}"></i></div>' +
-					'<div class="icon-public"><i ng-class="{' +
+					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class="icon-public"><i ng-class="{' +
 						'\'icon-eye-open\': timer.public == 1,' +
 						'\'icon-eye-close\': timer.public == 0' +
 					'}"></i></div>' +
-					'<div class="icon-name" ng-if="timer.owner_name">' +
+					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class="icon-name" ng-if="timer.owner_name">' +
 						'<a ng-href="/u/{{timer.owner_name}}">{{timer.owner_name}}</a>' +
 					'</div>' +
-					'<div class=""><center>{{timer.name}}</center></div>' +
-					'<div class="" id="{{elementId}}time" timer-time="timer.last_restart"></div>' + // TIME HERE
-					'<div class=""><center>' + 
+					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class=""><center>{{timer.name}}</center></div>' +
+					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class="" id="{{elementId}}time" timer-time="timer.last_restart"></div>' + // TIME HERE
+					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class=""><center>' + 
 						'<a class="btn btn-danger" ng-if="timer.can_edit || timer.id == 0" ng-click="restart()"><i class="icon-white icon-repeat"></i> Сброс</a>' + 
 						' <a ng-if="timer.public == 1" timer-twitter-link></a>' +
 						' <a class="btn" ng-click="edit()">&nbsp;<i class="icon-pencil"></i>&nbsp;</a>' +
-					'</center></div>' + 
-				'</div>'/* +
-				'</div>' +
-				'<div class="" ng-if="timer.set && timer.denied" ng-class="{\'loading\': loading}"><center>Доступ к таймеру запрещён</center></div>'
-				'<div class="" ng-if="!timer.set" class="span4 well timer" editor="false" ng-class="{\'loading\': loading}">' +
-					'<div class=""><p><center>' +
-						'<h3>Создать таймер</h3>' +
-					'</center></p></div>' +
-					'<div class=""><center>' +
-						' <a class="btn btn-success btn-large" href="#" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a>' +
 					'</center></div>' +
-					'<div class=""><p><center> </center></p></div>' +
-				'</div>'*/,
+					/* Timer denied */
+					'<div ng-if="timer.set && timer.denied" ng-hide="editor" class=""><center>Доступ к таймеру запрещён</center></div>' +
+					/* Timer denied */
+					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center><h3>Создать таймер</h3></center></p></div>' + // CREATE
+					'<div ng-if="!timer.set" ng-hide="editor" class=""><center> <a class="btn btn-success btn-large" href="#" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a></center></div>' +
+					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center> </center></p></div>' +
+				'</div>',
 			
 				//'<a ng-click="show(timer.id)">{{timer.name}}</a>' +
 					//'<a ng-show="editor" ng-click="save()">Save</a>' +
