@@ -137,6 +137,7 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 	$scope.edit = function() {
 		$scope.editor = true;
 		$scope.editableTimer = $scope.timer;
+		$scope.nameLength = $scope.editableTimer.name ? 120 - $scope.editableTimer.name.length : 120;
 	};
 	
 	$scope.save = function() {
@@ -361,8 +362,18 @@ timerApp
 					'<div ng-if="timer.set && timer.denied" ng-hide="editor" class=""><center>Доступ к таймеру запрещён</center></div>' +
 					/* Timer denied */
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center><h3>Создать таймер</h3></center></p></div>' + // CREATE
-					'<div ng-if="!timer.set" ng-hide="editor" class=""><center> <a class="btn btn-success btn-large" href="#" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a></center></div>' +
+					'<div ng-if="!timer.set" ng-hide="editor" class=""><center> <a class="btn btn-success btn-large" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a></center></div>' +
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center> </center></p></div>' +
+					/* Editor */
+					'<div ng-show="editor">' +
+						'<form class="">' +
+							'<div class="input-append"><center>' +
+								'<input type="text" class="span10" placeholder="Название таймера" ng-model="editableTimer.name" ng-change="nameLength = (120 - editableTimer.name.length)" ng-maxlength="120" ng-minlength="1">' +
+								'<span class="add-on" ng-class="{\'error\': editableTimer.name.$error.maxlength || editableTimer.name.$error.minlength}">{{nameLength}}</span>' +
+							'</center></div>' +
+							'<div class=""><center>' +
+								'<span ng-if="timer.id == -1"><a class="btn" id="{{elementId}}date_link"><i class="icon-calendar"></i> Начать ранее</a></span>&nbsp;' +
+					'</div>' +
 				'</div>',
 			
 				//'<a ng-click="show(timer.id)">{{timer.name}}</a>' +
