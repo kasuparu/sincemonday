@@ -132,13 +132,18 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 		timerFactory.getTimerAsync(id, function(results) {
 			$scope.loading = false;
 			$scope.timer = results;
+			$scope.editableTimer = $scope.timer;
 		});
 	};
 	$scope.edit = function() {
 		$scope.editor = true;
 		$scope.editableTimer = $scope.timer;
-		$scope.nameLength = $scope.editableTimer.name ? 120 - $scope.editableTimer.name.length : 120;
+		$scope.changeNameLength();
 	};
+	
+	$scope.changeNameLength = function() {
+		$scope.nameLengthLeft = 'undefined' !== typeof $scope.editableTimer.name ? $scope.nameLengthLeft = 120 - $scope.editableTimer.name.length : $scope.nameLengthLeft = '<0';
+	}
 	
 	$scope.save = function() {
 		$scope.editor = false;
@@ -156,6 +161,7 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 			timerFactory.restartTimerAsync($scope.timer.id, function(results) {
 				$scope.loading = false;
 				$scope.timer = results;
+				$scope.editableTimer = $scope.timer;
 			});
 		}
 	};
@@ -365,14 +371,29 @@ timerApp
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><center> <a class="btn btn-success btn-large" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a></center></div>' +
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center> </center></p></div>' +
 					/* Editor */
+					'<div ng-if="!timer.denied && timer.set" ng-show="editor" class="icon-good"><i ng-class="{' +
+						'\'icon-thumbs-up\': editableTimer.good == 1,' +
+						'\'icon-thumbs-down\': editableTimer.good == 0,' +
+						'\'icon-adjust\': (editableTimer.good != 1) && (editableTimer.good != 0)' +
+					'}"></i></div>' +
+					'<div ng-if="!timer.denied && timer.set" ng-show="editor" class="icon-public"><i ng-class="{' +
+						'\'icon-eye-open\': editableTimer.public == 1,' +
+						'\'icon-eye-close\': editableTimer.public == 0' +
+					'}"></i></div>' +
 					'<div ng-show="editor">' +
 						'<form class="">' +
 							'<div class="input-append"><center>' +
-								'<input type="text" class="span10" placeholder="Название таймера" ng-model="editableTimer.name" ng-change="nameLength = (120 - editableTimer.name.length)" ng-maxlength="120" ng-minlength="1">' +
-								'<span class="add-on" ng-class="{\'error\': editableTimer.name.$error.maxlength || editableTimer.name.$error.minlength}">{{nameLength}}</span>' +
+								'<input type="text" class="span10" placeholder="Название таймера" ng-model="editableTimer.name" ng-change="changeNameLength()" ng-maxlength="120">' +
+								'<span class="add-on" ng-class="{\'error\': editableTimer.name.$error.maxlength}">{{nameLengthLeft}}</span>' +
 							'</center></div>' +
 							'<div class=""><center>' +
 								'<span ng-if="timer.id == -1"><a class="btn" id="{{elementId}}date_link"><i class="icon-calendar"></i> Начать ранее</a></span>&nbsp;' +
+								'<label class="checkbox inline" rel="popover" data-placement="bottom" data-title="Позитивный">' +
+								'<input type="checkbox" ng-model="editableTimer.good" ng-true-value="{{1}}" ng-false-value="{{0}}"> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span></label>&nbsp;' +
+								'<label class="checkbox inline" rel="popover" data-placement="bottom" data-title="Виден всем">' +
+								'<input type="checkbox" ng-model="editableTimer.public" ng-true-value="{{1}}" ng-false-value="{{0}}"> <i class="icon-eye-open"></i></label>' +
+								// Problem with trueValue and falseValue
+							'</center></div>' +
 					'</div>' +
 				'</div>',
 			
