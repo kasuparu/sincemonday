@@ -122,6 +122,13 @@ timerApp.factory('timerFactory', function($http, $location) {
 		},
 		restartTimerAsync: function(id, callback) {
 			$http.get('/t/' + id + '/restart').success(callback);
+		},
+		setTimerAsync: function(obj, callback) {
+			$http({
+				url:'/t/' + obj.id + '/set',
+				method: 'GET',
+				params: obj,
+			}).success(callback);
 		}
 	};
 });
@@ -133,26 +140,41 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 			$scope.loading = false;
 			$scope.timer = results;
 			$scope.editableTimer = $scope.timer;
+			$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+			$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
 		});
 	};
 	$scope.edit = function() {
 		$scope.editor = true;
 		$scope.editableTimer = $scope.timer;
+		$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+		$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
 		$scope.changeNameLength();
 	};
 	
 	$scope.changeNameLength = function() {
-		$scope.nameLengthLeft = 'undefined' !== typeof $scope.editableTimer.name ? $scope.nameLengthLeft = 120 - $scope.editableTimer.name.length : $scope.nameLengthLeft = '<0';
+		$scope.nameLengthLeft = 'undefined' !== typeof $scope.editableTimer.name ? $scope.nameLengthLeft = 120 - $scope.editableTimer.name.length : $scope.nameLengthLeft = '!!';
 	}
 	
 	$scope.save = function() {
-		$scope.editor = false;
-		$scope.timer = $scope.editableTimer;
+		if ($scope.editableTimer && 'undefined' !== typeof $scope.editableTimer.id) {
+			$scope.loading = true;
+			timerFactory.setTimerAsync($scope.editableTimer, function(results) {
+				$scope.loading = false;
+				$scope.timer = results;
+				$scope.editor = false;
+				$scope.editableTimer = $scope.timer;
+				$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+				$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
+			});
+		}
 	};
 	
 	$scope.cancel = function() {
 		$scope.editor = false;
 		$scope.editableTimer = $scope.timer;
+		$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+		$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
 	};
 	
 	$scope.restart = function() {
@@ -162,6 +184,8 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 				$scope.loading = false;
 				$scope.timer = results;
 				$scope.editableTimer = $scope.timer;
+				$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+				$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
 			});
 		}
 	};
@@ -371,12 +395,12 @@ timerApp
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><center> <a class="btn btn-success btn-large" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a></center></div>' +
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center> </center></p></div>' +
 					/* Editor */
-					'<div ng-if="!timer.denied && timer.set" ng-show="editor" class="icon-good"><i ng-class="{' +
+					'<div ng-if="!timer.denied" ng-show="editor" class="icon-good"><i ng-class="{' +
 						'\'icon-thumbs-up\': editableTimer.good == 1,' +
 						'\'icon-thumbs-down\': editableTimer.good == 0,' +
 						'\'icon-adjust\': (editableTimer.good != 1) && (editableTimer.good != 0)' +
 					'}"></i></div>' +
-					'<div ng-if="!timer.denied && timer.set" ng-show="editor" class="icon-public"><i ng-class="{' +
+					'<div ng-if="!timer.denied" ng-show="editor" class="icon-public"><i ng-class="{' +
 						'\'icon-eye-open\': editableTimer.public == 1,' +
 						'\'icon-eye-close\': editableTimer.public == 0' +
 					'}"></i></div>' +
@@ -388,20 +412,19 @@ timerApp
 							'</center></div>' +
 							'<div class=""><center>' +
 								'<span ng-if="timer.id == -1"><a class="btn" id="{{elementId}}date_link"><i class="icon-calendar"></i> Начать ранее</a></span>&nbsp;' +
-								'<label class="checkbox inline" rel="popover" data-placement="bottom" data-title="Позитивный">' +
-								'<input type="checkbox" ng-model="editableTimer.good" ng-true-value="{{1}}" ng-false-value="{{0}}"> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span></label>&nbsp;' +
-								'<label class="checkbox inline" rel="popover" data-placement="bottom" data-title="Виден всем">' +
-								'<input type="checkbox" ng-model="editableTimer.public" ng-true-value="{{1}}" ng-false-value="{{0}}"> <i class="icon-eye-open"></i></label>' +
-								// Problem with trueValue and falseValue
+								'<label class="checkbox inline" bootstrap-popover="{\'content\':\'&lt;span class=&quot;timer-good background-good&quot;&gt;&lt;i class=&quot;icon-thumbs-up timer-good&quot;&gt;&lt;/i&gt; — хорошие события и привычки.&lt;/span&gt; Пример: «Не курю».&lt;br /&gt;&lt;span class=&quot;timer-bad background-bad&quot;&gt;&lt;i class=&quot;icon-thumbs-down timer-bad&quot;&gt;&lt;/i&gt; — плохие события или вредные привычки.&lt;/span&gt; Пример: «Не видел родителей».\'}" data-placement="bottom" data-title="Позитивный">' +
+								'<input type="checkbox" ng-model="editableTimer.good"> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span></label>&nbsp;' +
+								'<label class="checkbox inline" bootstrap-popover="{\'content\':\'&lt;i class=&quot;icon-eye-open&quot;&gt;&lt;/i&gt; — таймер виден всем посетителям страницы профиля.&lt;br /&gt;&lt;i class=&quot;icon-eye-close&quot;&gt;&lt;/i&gt; — таймер виден исключительно владельцу.\'}" data-placement="bottom" data-title="Виден всем">' +
+								'<input type="checkbox" ng-model="editableTimer.public"> <i class="icon-eye-open"></i></label>' +
 							'</center></div>' +
+						'</form>' +
+						'<div class=""><center>' +
+							'  <a class="btn btn-success" ng-click="save()"><i class="icon-white icon-ok"></i> Сохранить</a>' +
+							'  <a class="btn" ng-click="cancel()"><i class="icon-ban-circle"></i> Отмена</a>' +
+							'  <a ng-if="timer.id != -1" class="btn btn-danger pull-right" ng-click="remove()">&nbsp;<i class="icon-white icon-trash"></i>&nbsp;</a>' +
+						'</center></div>' +
 					'</div>' +
 				'</div>',
-			
-				//'<a ng-click="show(timer.id)">{{timer.name}}</a>' +
-					//'<a ng-show="editor" ng-click="save()">Save</a>' +
-					//'<a ng-show="editor" ng-click="cancel()">Cancel</a>' +
-					//'<a ng-hide="editor" ng-click="edit()">Edit</a>' +
-			//transclude: true,
 			replace: true
 		};
 	})
@@ -444,5 +467,13 @@ timerApp
 			template:
 				'<div><center><p>{{message.text}}</p></center></div>',
 			replace: true
+		};
+	})
+	.directive('bootstrapPopover', function() {
+		return {
+			restrict: 'A',
+			link: function(scope, element, attrs) {
+				$(element).popover(scope.$eval(attrs.bootstrapPopover));
+			}
 		};
 	});

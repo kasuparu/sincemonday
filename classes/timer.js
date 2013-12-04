@@ -268,13 +268,13 @@ Timer.prototype.setProps = function(label, ownerId, lastRestart, dateSelected) {
 
 Timer.prototype.setPublic = function(publicVal) {
 	if (this.set == 1) {
-		this.public = publicVal != '1' ? 0 : 1;
+		this.public = (publicVal != '1' && publicVal != 'true') ? 0 : 1;
 	}
 }
 
 Timer.prototype.setGood = function(goodVal) {
 	if (this.set == 1) {
-		this.good = goodVal == '1' ? 1 : 0;
+		this.good = (goodVal == '1' || goodVal == 'true') ? 1 : 0;
 	}
 }
 
