@@ -73,7 +73,7 @@ timerApp.factory('timerListFactory', function($http) {
 	};
 });
 
-timerApp.controller('timerListController', ['$scope', '$routeParams', 'timerListFactory', function($scope, $routeParams, timerListFactory) {
+timerApp.controller('timerListController', ['$scope', '$routeParams', 'timerFactory', 'timerListFactory', function($scope, $routeParams, timerFactory, timerListFactory) {
 	$scope.loading = true;
 	$scope.loadingFriends = true;
 	
@@ -113,6 +113,36 @@ timerApp.controller('timerListController', ['$scope', '$routeParams', 'timerList
 		}
 		$scope.friendsTimers.range = createRange($scope.friendsTimers);
 	});
+	
+	$scope.timerListAppend = function(id, callback) {
+		timerFactory.getTimerAsync(id, function(timer) {
+			$scope.timers.push(timer);
+			$scope.timers.range = createRange($scope.timers);
+			console.log('adding to timers: ' + JSON.stringify(timer));
+			callback(timer);
+		})
+	};
+	
+	$scope.removeTimerById = function(id) {
+		console.log('searching timer ' + id);
+		$scope.timers.forEach(function(e, i) {
+			if (e.id === id) {
+				console.log('removed timer with id ' + id);
+				$scope.timers.splice(i, 1);
+				$scope.timers.range = createRange($scope.timers);
+			}
+		});
+	};
+	
+	$scope.replaceTimer = function(id, timer) {
+		console.log('searching timer ' + id);
+		$scope.timers.forEach(function(e, i) {
+			if (e.id === id) {
+				console.log('replaced timer with id ' + timer.id);
+				$scope.timers[i] = timer;
+			}
+		});
+	};
 }]);
 
 timerApp.factory('timerFactory', function($http, $location) {
@@ -129,7 +159,10 @@ timerApp.factory('timerFactory', function($http, $location) {
 				method: 'GET',
 				params: obj,
 			}).success(callback);
-		}
+		},
+		removeTimerAsync: function(id, callback) {
+			$http.get('/t/' + id + '/remove').success(callback);
+		},
 	};
 });
 
@@ -162,7 +195,12 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 			timerFactory.setTimerAsync($scope.editableTimer, function(results) {
 				$scope.loading = false;
 				$scope.timer = results;
+				$scope.$parent.replaceTimer($scope.editableTimer.id, results);
 				$scope.editor = false;
+				if ($scope.editableTimer.id == -1) {
+					console.log('trying to append new timer -1');
+					$scope.$parent.timerListAppend(-1, function() {});
+				}
 				$scope.editableTimer = $scope.timer;
 				$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
 				$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
@@ -186,6 +224,20 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 				$scope.editableTimer = $scope.timer;
 				$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
 				$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
+			});
+		}
+	};
+	
+	$scope.remove = function() {
+		if ($scope.timer && 'undefined' !== typeof $scope.timer.id) {
+			$scope.loading = true;
+			timerFactory.removeTimerAsync($scope.timer.id, function(results) {
+				$scope.loading = false;
+				console.log('removing ' + results.ok);
+				if (results && results.ok) {
+					console.log('trying to remove timer ' + $scope.timer.id);
+					$scope.$parent.removeTimerById($scope.timer.id);
+				}
 			});
 		}
 	};
@@ -474,6 +526,24 @@ timerApp
 			restrict: 'A',
 			link: function(scope, element, attrs) {
 				$(element).popover(scope.$eval(attrs.bootstrapPopover));
+			}
+		};
+	})
+	.directive('bootstrapDatepicker', function() {
+		return {
+			restrict: 'A',
+			scope: {
+				
+			}
+			link: function(scope, element, attrs) {
+				/*
+				var now = new Date();
+				var now_string = now.getDate()+'.'+(now.getMonth()+1)+'.'+now.getFullYear();
+				$('#'+date_link).parent().html('<span class="input-prepend date" id="'+date_date+'" data-date-weekstart="1" data-date="'+now_string+'" data-date-format="dd.mm.yyyy"><span class="add-on"><i class="icon-th"></i></span><input class="span3" size="16" type="text" value="'+now_string+'" readonly=""></span><span class="input-append bootstrap-timepicker-component"><input type="text" class="timepicker-default input-mini" id="'+date_time+'" value="12:00"><span class="add-on"><i class="icon-time"></i></span></span>');
+				$('#'+date_date).datepicker();
+				$('#'+date_time).timepicker({showInputs: true, disableFocus: true, showMeridian: false, defaultTime: 'value'});
+				*/
+				$(element).popover(scope.$eval(attrs.bootstrapDatepicker));
 			}
 		};
 	});
