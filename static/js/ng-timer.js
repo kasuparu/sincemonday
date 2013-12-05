@@ -1,3 +1,11 @@
+/***
+ *       _       _     _ _ _   _                   _ 
+ *      /_\   __| | __| (_) |_(_) ___  _ __   __ _| |
+ *     //_\\ / _` |/ _` | | __| |/ _ \| '_ \ / _` | |
+ *    /  _  \ (_| | (_| | | |_| | (_) | | | | (_| | |
+ *    \_/ \_/\__,_|\__,_|_|\__|_|\___/|_| |_|\__,_|_|
+ *                                                   
+ */
 // attach the .compare method to Array's prototype to call it on any array
 Array.prototype.compare = function (array) {
     // if the other array is a falsy value, return
@@ -23,6 +31,14 @@ Array.prototype.compare = function (array) {
     return true;
 }
 
+/***
+ *       ___             __ _       
+ *      / __\___  _ __  / _(_) __ _ 
+ *     / /  / _ \| '_ \| |_| |/ _` |
+ *    / /__| (_) | | | |  _| | (_| |
+ *    \____/\___/|_| |_|_| |_|\__, |
+ *                            |___/ 
+ */
 var timerApp = angular.module('timerApp', [
 	'ngRoute'
 ]);
@@ -65,6 +81,14 @@ timerApp
 		}
 	]);
 
+/***
+ *       __ _     _   
+ *      / /(_)___| |_ 
+ *     / / | / __| __|
+ *    / /__| \__ \ |_ 
+ *    \____/_|___/\__|
+ *                    
+ */
 timerApp.factory('timerListFactory', function($http) {
 	return {
 		getTimerListAsync: function(type, screen_name, callback) {
@@ -145,6 +169,14 @@ timerApp.controller('timerListController', ['$scope', '$routeParams', 'timerFact
 	};
 }]);
 
+/***
+ *     _____ _                     
+ *    /__   (_)_ __ ___   ___ _ __ 
+ *      / /\/ | '_ ` _ \ / _ \ '__|
+ *     / /  | | | | | | |  __/ |   
+ *     \/   |_|_| |_| |_|\___|_|   
+ *                                 
+ */
 timerApp.factory('timerFactory', function($http, $location) {
 	return {
 		getTimerAsync: function(id, callback) {
@@ -247,6 +279,14 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 	}
 }]);
 
+/***
+ *     _____ _                    _____ _                
+ *    /__   (_)_ __ ___   ___ _ _/__   (_)_ __ ___   ___ 
+ *      / /\/ | '_ ` _ \ / _ \ '__|/ /\/ | '_ ` _ \ / _ \
+ *     / /  | | | | | | |  __/ |  / /  | | | | | | |  __/
+ *     \/   |_|_| |_| |_|\___|_|  \/   |_|_| |_| |_|\___|
+ *                                                       
+ */
 timerApp.factory('timerTimeFactory', function($http) {
 	return {
 		timerGetTime: function(last_restart, format, debug) {
@@ -386,6 +426,14 @@ timerApp.controller('timerTimeController', ['$scope', '$timeout', 'timerTimeFact
 	}
 }]);
 
+/***
+ *     _____           _ _   _             __ _       _    
+ *    /__   \__      _(_) |_| |_ ___ _ __ / /(_)_ __ | | __
+ *      / /\/\ \ /\ / / | __| __/ _ \ '__/ / | | '_ \| |/ /
+ *     / /    \ V  V /| | |_| ||  __/ | / /__| | | | |   < 
+ *     \/      \_/\_/ |_|\__|\__\___|_| \____/_|_| |_|_|\_\
+ *                                                         
+ */
 timerApp.controller('timerTwitterLinkController', ['$scope', '$window', '$location', 'timerTimeFactory', function($scope, $window, $location, timerTimeFactory) {
 	$scope.getUrl = function () {
 		return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
@@ -401,7 +449,23 @@ timerApp.controller('timerTwitterLinkController', ['$scope', '$window', '$locati
 	};
 }]);
 
+/***
+ *        ___ _               _   _                
+ *       /   (_)_ __ ___  ___| |_(_)_   _____  ___ 
+ *      / /\ / | '__/ _ \/ __| __| \ \ / / _ \/ __|
+ *     / /_//| | | |  __/ (__| |_| |\ V /  __/\__ \
+ *    /___,' |_|_|  \___|\___|\__|_| \_/ \___||___/
+ *                                                 
+ */
 timerApp
+/***
+ *     _____ _                     
+ *    /__   (_)_ __ ___   ___ _ __ 
+ *      / /\/ | '_ ` _ \ / _ \ '__|
+ *     / /  | | | | | | |  __/ |   
+ *     \/   |_|_| |_| |_|\___|_|   
+ *                                 
+ */
 	.directive('timer', function() {
 		return {
 			restrict: 'A',
@@ -442,8 +506,8 @@ timerApp
 					'</center></div>' +
 					/* Timer denied */
 					'<div ng-if="timer.set && timer.denied" ng-hide="editor" class=""><center>Доступ к таймеру запрещён</center></div>' +
-					/* Timer denied */
-					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center><h3>Создать таймер</h3></center></p></div>' + // CREATE
+					/* Timer create */
+					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center><h3>Создать таймер</h3></center></p></div>' +
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><center> <a class="btn btn-success btn-large" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a></center></div>' +
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center> </center></p></div>' +
 					/* Editor */
@@ -463,7 +527,9 @@ timerApp
 								'<span class="add-on" ng-class="{\'error\': editableTimer.name.$error.maxlength}">{{nameLengthLeft}}</span>' +
 							'</center></div>' +
 							'<div class=""><center>' +
-								'<span ng-if="timer.id == -1"><a class="btn" id="{{elementId}}date_link"><i class="icon-calendar"></i> Начать ранее</a></span>&nbsp;' +
+								'<span ng-if="timer.id == -1" timer-date-time="editableTimer.last_restart_date" timer-date-time-time="editableTimer.last_restart_time">' +
+									'<a class="btn" id="{{elementId}}date_link"><i class="icon-calendar"></i> Начать ранее</a>' +
+								'</span>&nbsp;' +
 								'<label class="checkbox inline" bootstrap-popover="{\'content\':\'&lt;span class=&quot;timer-good background-good&quot;&gt;&lt;i class=&quot;icon-thumbs-up timer-good&quot;&gt;&lt;/i&gt; — хорошие события и привычки.&lt;/span&gt; Пример: «Не курю».&lt;br /&gt;&lt;span class=&quot;timer-bad background-bad&quot;&gt;&lt;i class=&quot;icon-thumbs-down timer-bad&quot;&gt;&lt;/i&gt; — плохие события или вредные привычки.&lt;/span&gt; Пример: «Не видел родителей».\'}" data-placement="bottom" data-title="Позитивный">' +
 								'<input type="checkbox" ng-model="editableTimer.good"> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span></label>&nbsp;' +
 								'<label class="checkbox inline" bootstrap-popover="{\'content\':\'&lt;i class=&quot;icon-eye-open&quot;&gt;&lt;/i&gt; — таймер виден всем посетителям страницы профиля.&lt;br /&gt;&lt;i class=&quot;icon-eye-close&quot;&gt;&lt;/i&gt; — таймер виден исключительно владельцу.\'}" data-placement="bottom" data-title="Виден всем">' +
@@ -480,6 +546,14 @@ timerApp
 			replace: true
 		};
 	})
+/***
+ *     _____ _                    _____ _                
+ *    /__   (_)_ __ ___   ___ _ _/__   (_)_ __ ___   ___ 
+ *      / /\/ | '_ ` _ \ / _ \ '__|/ /\/ | '_ ` _ \ / _ \
+ *     / /  | | | | | | |  __/ |  / /  | | | | | | |  __/
+ *     \/   |_|_| |_| |_|\___|_|  \/   |_|_| |_| |_|\___|
+ *                                                       
+ */
 	.directive('timerTime', function() {
 		return {
 			restrict: 'A',
@@ -501,6 +575,14 @@ timerApp
 			}
 		}
 	})
+/***
+ *     _____           _ _   _             __ _       _    
+ *    /__   \__      _(_) |_| |_ ___ _ __ / /(_)_ __ | | __
+ *      / /\/\ \ /\ / / | __| __/ _ \ '__/ / | | '_ \| |/ /
+ *     / /    \ V  V /| | |_| ||  __/ | / /__| | | | |   < 
+ *     \/      \_/\_/ |_|\__|\__\___|_| \____/_|_| |_|_|\_\
+ *                                                         
+ */
 	.directive('timerTwitterLink', function() {
 		return {
 			restrict: 'A',
@@ -509,18 +591,34 @@ timerApp
 			template: '<a ng-href="{{createLink()}}" target="_blank" class="twitter-share-button btn btn-inverse"><img src="https://twitter.com/favicons/favicon.ico"> Твитнуть</a>',
 			replace: true
 		}
-	}) 
-	.directive('listMessage', function() {
-		return {
-			restrict: 'A',
-			scope: {
-				message: '=listMessage'
-			},
-			template:
-				'<div><center><p>{{message.text}}</p></center></div>',
-			replace: true
-		};
 	})
+/***
+ *                                           
+ *      /\/\   ___  ___ ___  __ _  __ _  ___ 
+ *     /    \ / _ \/ __/ __|/ _` |/ _` |/ _ \
+ *    / /\/\ \  __/\__ \__ \ (_| | (_| |  __/
+ *    \/    \/\___||___/___/\__,_|\__, |\___|
+ *                                |___/      
+ */
+	.directive('listMessage', function() {
+        return {
+            restrict: 'A',
+            scope: {
+                    message: '=listMessage'
+            },
+            template:
+                    '<div><center><p>{{message.text}}</p></center></div>',
+            replace: true
+		};
+    })
+/***
+ *       ___                                
+ *      / _ \___  _ __   _____   _____ _ __ 
+ *     / /_)/ _ \| '_ \ / _ \ \ / / _ \ '__|
+ *    / ___/ (_) | |_) | (_) \ V /  __/ |   
+ *    \/    \___/| .__/ \___/ \_/ \___|_|   
+ *               |_|                        
+ */
 	.directive('bootstrapPopover', function() {
 		return {
 			restrict: 'A',
@@ -529,21 +627,39 @@ timerApp
 			}
 		};
 	})
-	.directive('bootstrapDatepicker', function() {
+/***
+ *        ___      _      _____ _                
+ *       /   \__ _| |_ __/__   (_)_ __ ___   ___ 
+ *      / /\ / _` | __/ _ \/ /\/ | '_ ` _ \ / _ \
+ *     / /_// (_| | ||  __/ /  | | | | | | |  __/
+ *    /___,' \__,_|\__\___\/   |_|_| |_| |_|\___|
+ *                                               
+ */
+	.directive('timerDateTime', function() {
 		return {
 			restrict: 'A',
 			scope: {
-				
-			}
+				last_update_date: '=timerDateTime',
+				last_update_time: '=timerDateTimeTime'
+			},
+			template: '' +
+				'<span class="input-prepend date" data-date-weekstart="1" data-date="{{last_update_date}}" data-date-format="dd.mm.yyyy">' +
+					'<span class="add-on"><i class="icon-th"></i></span>' +
+					'<input class="span3 date-input" size="16" type="text" ng-model="last_update_date" readonly="">' +
+				'</span>' +
+				'<span class="input-append bootstrap-timepicker-component">' +
+					'<input type="text" class="timepicker-default input-mini" ng-model="last_update_time">' +
+					'<span class="add-on"><i class="icon-time"></i></span>' +
+				'</span>',
 			link: function(scope, element, attrs) {
-				/*
 				var now = new Date();
-				var now_string = now.getDate()+'.'+(now.getMonth()+1)+'.'+now.getFullYear();
-				$('#'+date_link).parent().html('<span class="input-prepend date" id="'+date_date+'" data-date-weekstart="1" data-date="'+now_string+'" data-date-format="dd.mm.yyyy"><span class="add-on"><i class="icon-th"></i></span><input class="span3" size="16" type="text" value="'+now_string+'" readonly=""></span><span class="input-append bootstrap-timepicker-component"><input type="text" class="timepicker-default input-mini" id="'+date_time+'" value="12:00"><span class="add-on"><i class="icon-time"></i></span></span>');
-				$('#'+date_date).datepicker();
-				$('#'+date_time).timepicker({showInputs: true, disableFocus: true, showMeridian: false, defaultTime: 'value'});
-				*/
-				$(element).popover(scope.$eval(attrs.bootstrapDatepicker));
+				var now_date = now.getDate() + '.' + (now.getMonth()+1 < 10 ? '0' + (now.getMonth()+1) : (now.getMonth()+1)) + '.' + now.getFullYear();
+				var now_time = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes());
+				
+				scope.last_update_date = scope.last_update_date || now_date;
+				scope.last_update_time = scope.last_update_time || now_time;
+				$(element).find('.date').datepicker();
+				$(element).find('.bootstrap-timepicker-component').timepicker({showInputs: true, disableFocus: true, showMeridian: false, defaultTime: 'value'});
 			}
 		};
 	});
