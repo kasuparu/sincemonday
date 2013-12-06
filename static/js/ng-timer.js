@@ -652,5 +652,6 @@ timerApp
 					'<span class="add-on"><i class="icon-th"></i></span>' +
 					'<input class="span6 date-input" size="16" type="text" ng-model="lastUpdate" datepicker-popup="dd.MM.yyyy H:mm" datepicker-options="{\'starting-day\': 1}">' +
 				'</span>',
+			replace:true
 		};
 	});
