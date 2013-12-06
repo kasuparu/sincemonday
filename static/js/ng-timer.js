@@ -40,7 +40,8 @@ Array.prototype.compare = function (array) {
  *                            |___/ 
  */
 var timerApp = angular.module('timerApp', [
-	'ngRoute'
+	'ngRoute',
+	'ui.bootstrap'
 ]);
 
 timerApp
@@ -82,6 +83,11 @@ timerApp.controller('userPageController', ['$scope', '$routeParams', function($s
 	$scope.friendsMessage = {'text': ''};
 }]);
 
+timerApp.controller('collapsibleMenuController', ['$scope', function($scope) {
+	$scope.isCollapsed = true;
+}]);
+
+
 /***
  *       __ _     _   
  *      / /(_)___| |_ 
@@ -100,8 +106,6 @@ timerApp.factory('timerListFactory', function($http) {
 
 timerApp.controller('timerListController', ['$scope', 'timerFactory', 'timerListFactory', function($scope, timerFactory, timerListFactory) {
 	$scope.loading = true;
-	
-	console.log($scope);
 	
 	var createRange = function(target) {
 		return function () {
@@ -516,12 +520,14 @@ timerApp
 								'<span class="add-on" ng-class="{\'error\': editableTimer.name.$error.maxlength}">{{nameLengthLeft}}</span>' +
 							'</center></div>' +
 							'<div class=""><center>' +
-								'<span ng-if="timer.id == -1" timer-date-time="editableTimer.last_restart_date" timer-date-time-time="editableTimer.last_restart_time">' +
+								'<span ng-if="timer.id == -1" timer-date-time="editableTimer.last_restart_date">' +
 									'<a class="btn" id="{{elementId}}date_link"><i class="icon-calendar"></i> Начать ранее</a>' +
 								'</span>&nbsp;' +
-								'<label class="checkbox inline" bootstrap-popover="{\'content\':\'&lt;span class=&quot;timer-good background-good&quot;&gt;&lt;i class=&quot;icon-thumbs-up timer-good&quot;&gt;&lt;/i&gt; — хорошие события и привычки.&lt;/span&gt; Пример: «Не курю».&lt;br /&gt;&lt;span class=&quot;timer-bad background-bad&quot;&gt;&lt;i class=&quot;icon-thumbs-down timer-bad&quot;&gt;&lt;/i&gt; — плохие события или вредные привычки.&lt;/span&gt; Пример: «Не видел родителей».\'}" data-placement="bottom" data-title="Позитивный">' +
-								'<input type="checkbox" ng-model="editableTimer.good"> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span></label>&nbsp;' +
-								'<label class="checkbox inline" bootstrap-popover="{\'content\':\'&lt;i class=&quot;icon-eye-open&quot;&gt;&lt;/i&gt; — таймер виден всем посетителям страницы профиля.&lt;br /&gt;&lt;i class=&quot;icon-eye-close&quot;&gt;&lt;/i&gt; — таймер виден исключительно владельцу.\'}" data-placement="bottom" data-title="Виден всем">' +
+								'<span>' +
+									'<label class="checkbox inline" tooltip-html-unsafe="&lt;span class=&quot;timer-good background-good&quot;&gt;&lt;i class=&quot;icon-thumbs-up timer-good&quot;&gt;&lt;/i&gt; — хорошие события и привычки.&lt;/span&gt; Пример: «Не курю».&lt;br /&gt;&lt;span class=&quot;timer-bad background-bad&quot;&gt;&lt;i class=&quot;icon-thumbs-down timer-bad&quot;&gt;&lt;/i&gt; — плохие события или вредные привычки.&lt;/span&gt; Пример: «Не видел родителей»." tooltip-placement="bottom" tooltip-title="Позитивный">' +
+									'<input type="checkbox" ng-model="editableTimer.good"> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span></label>&nbsp;' +
+								'</span>' +
+								'<label class="checkbox inline" tooltip-html-unsafe="&lt;i class=&quot;icon-eye-open&quot;&gt;&lt;/i&gt; — таймер виден всем посетителям страницы профиля.&lt;br /&gt;&lt;i class=&quot;icon-eye-close&quot;&gt;&lt;/i&gt; — таймер виден исключительно владельцу." tooltip-placement="bottom" tooltip-title="Виден всем">' +
 								'<input type="checkbox" ng-model="editableTimer.public"> <i class="icon-eye-open"></i></label>' +
 							'</center></div>' +
 						'</form>' +
@@ -628,22 +634,6 @@ timerApp
 		};
     })
 /***
- *       ___                                
- *      / _ \___  _ __   _____   _____ _ __ 
- *     / /_)/ _ \| '_ \ / _ \ \ / / _ \ '__|
- *    / ___/ (_) | |_) | (_) \ V /  __/ |   
- *    \/    \___/| .__/ \___/ \_/ \___|_|   
- *               |_|                        
- */
-	.directive('bootstrapPopover', function() {
-		return {
-			restrict: 'A',
-			link: function(scope, element, attrs) {
-				$(element).popover(scope.$eval(attrs.bootstrapPopover));
-			}
-		};
-	})
-/***
  *        ___      _      _____ _                
  *       /   \__ _| |_ __/__   (_)_ __ ___   ___ 
  *      / /\ / _` | __/ _ \/ /\/ | '_ ` _ \ / _ \
@@ -655,27 +645,12 @@ timerApp
 		return {
 			restrict: 'A',
 			scope: {
-				last_update_date: '=timerDateTime',
-				last_update_time: '=timerDateTimeTime'
+				lastUpdate: '=timerDateTime'
 			},
 			template: '' +
-				'<span class="input-prepend date" data-date-weekstart="1" data-date="{{last_update_date}}" data-date-format="dd.mm.yyyy">' +
+				'<span class="input-prepend date">' +
 					'<span class="add-on"><i class="icon-th"></i></span>' +
-					'<input class="span3 date-input" size="16" type="text" ng-model="last_update_date" readonly="">' +
-				'</span>' +
-				'<span class="input-append bootstrap-timepicker-component">' +
-					'<input type="text" class="timepicker-default input-mini" ng-model="last_update_time">' +
-					'<span class="add-on"><i class="icon-time"></i></span>' +
+					'<input class="span6 date-input" size="16" type="text" ng-model="lastUpdate" datepicker-popup="dd.MM.yyyy H:mm" datepicker-options="{\'starting-day\': 1}">' +
 				'</span>',
-			link: function(scope, element, attrs) {
-				var now = new Date();
-				var now_date = now.getDate() + '.' + (now.getMonth()+1 < 10 ? '0' + (now.getMonth()+1) : (now.getMonth()+1)) + '.' + now.getFullYear();
-				var now_time = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes());
-				
-				scope.last_update_date = scope.last_update_date || now_date;
-				scope.last_update_time = scope.last_update_time || now_time;
-				$(element).find('.date').datepicker();
-				$(element).find('.bootstrap-timepicker-component').timepicker({showInputs: true, disableFocus: true, showMeridian: false, defaultTime: 'value'});
-			}
 		};
 	});
