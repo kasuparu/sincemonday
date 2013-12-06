@@ -50,36 +50,37 @@ timerApp
 			
 			$routeProvider
 				.when('/u/:screen_name/', {
-					controller: 'timerListController',
+					controller: 'userPageController',
 					template: '' + 
 						'<div class="row-fluid">' +
 							'<div class="span12">' +
 								'<p class="lead">{{headerText}}</p>' +
 							'</div>' +
 						'</div>' + 
-						'<div class="container-fluid counter-container" id="countercontainer" ng-class="{\'loading\': loading}">' +
-							'<div ng-if="message" list-message="message"></div>' +
-							'<div ng-repeat="n in timers.range()" class="row-fluid" id="countercontainerrow{{$index}}">' +
-								'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="concat(\'counter\', item.id)"></div>' +
-							'</div>' +
-						'</div>' +
+						'<div id="countercontainer" timer-list="timerListUrl" timer-list-message="message"></div>' +
 						'<hr ng-if="headerTextFriends">' + 
 						'<div class="row-fluid" ng-if="headerTextFriends">' +
 							'<div class="span12">' +
 								'<p class="lead">{{headerTextFriends}}</p>' +
 							'</div>' +
 						'</div>' + 
-						'<div class="container-fluid counter-container" id="friendcountercontainer" ng-class="{\'loading\': loadingFriends}">' +
-							'<div ng-repeat="n in friendsTimers.range()" class="row-fluid" id="friendcountercontainerrow{{$index}}">' +
-								'<div ng-repeat="item in friendsTimers.slice(n, n+3)" timer="item" id="concat(\'friendcounter\', item.id)"></div>' +
-							'</div>' +
-						'</div>'
+						'<div id="friendcountercontainer" timer-list="timerListFriendsUrl" timer-list-message="friendsMessage"></div>'
 				})
 				.otherwise({
 					redirectTo: '/' // Change that!
 				});
 		}
 	]);
+
+timerApp.controller('userPageController', ['$scope', '$routeParams', function($scope, $routeParams) {
+	$scope.headerText = $routeParams.screen_name;
+	$scope.timerListUrl = '/u/' + $routeParams.screen_name;
+	$scope.message = {'text': 'У пользователя нет публичных таймеров.'};
+	
+	$scope.headerTextFriends = 'Таймеры друзей'; //TODO: EMPTY IF PAGE USER IS NOT OWNER
+	$scope.timerListFriendsUrl = '/f/' + $routeParams.screen_name;
+	$scope.friendsMessage = {'text': ''};
+}]);
 
 /***
  *       __ _     _   
@@ -91,15 +92,16 @@ timerApp
  */
 timerApp.factory('timerListFactory', function($http) {
 	return {
-		getTimerListAsync: function(type, screen_name, callback) {
-			$http.get('/' + type + '/' + screen_name + '/timers').success(callback);
+		getTimerListAsync: function(url, callback) {
+			$http.get(url + '/timers').success(callback);
 		}
 	};
 });
 
-timerApp.controller('timerListController', ['$scope', '$routeParams', 'timerFactory', 'timerListFactory', function($scope, $routeParams, timerFactory, timerListFactory) {
+timerApp.controller('timerListController', ['$scope', 'timerFactory', 'timerListFactory', function($scope, timerFactory, timerListFactory) {
 	$scope.loading = true;
-	$scope.loadingFriends = true;
+	
+	console.log($scope);
 	
 	var createRange = function(target) {
 		return function () {
@@ -113,29 +115,16 @@ timerApp.controller('timerListController', ['$scope', '$routeParams', 'timerFact
 		return Array.prototype.slice.call(arguments).join('');
 	}
 	
-	timerListFactory.getTimerListAsync('u', $routeParams.screen_name, function(results) {
+	timerListFactory.getTimerListAsync($scope.timerListUrl, function(results) {
 		$scope.loading = false;
-		$scope.headerText = $routeParams.screen_name;
+		
 		if (results.length === 0) {
 			$scope.timers = [];
-			$scope.message = {'text': 'У пользователя нет публичных таймеров.'};
 		} else {
 			$scope.timers = results;
 			
 		}
 		$scope.timers.range = createRange($scope.timers);
-	});
-	
-	timerListFactory.getTimerListAsync('f', $routeParams.screen_name, function(results) {
-		$scope.loadingFriends = false;
-		if (results.length === 0) {
-			$scope.friendsTimers = [];
-			$scope.headerTextFriends = '';
-		} else {
-			$scope.friendsTimers = results;
-			$scope.headerTextFriends = 'Таймеры друзей';
-		}
-		$scope.friendsTimers.range = createRange($scope.friendsTimers);
 	});
 	
 	$scope.timerListAppend = function(id, callback) {
@@ -541,6 +530,33 @@ timerApp
 							'  <a class="btn" ng-click="cancel()"><i class="icon-ban-circle"></i> Отмена</a>' +
 							'  <a ng-if="timer.id != -1" class="btn btn-danger pull-right" ng-click="remove()">&nbsp;<i class="icon-white icon-trash"></i>&nbsp;</a>' +
 						'</center></div>' +
+					'</div>' +
+				'</div>',
+			replace: true
+		};
+	})
+/***
+ *       __ _     _   
+ *      / /(_)___| |_ 
+ *     / / | / __| __|
+ *    / /__| \__ \ |_ 
+ *    \____/_|___/\__|
+ *                    
+ */
+	.directive('timerList', function() {
+		return {
+			restrict: 'A',
+			scope: {
+				timerListUrl: '=timerList',
+				elementId: '=id',
+				message: '=timerListMessage'
+			},
+			controller: 'timerListController',
+			template: '' +
+				'<div class="container-fluid counter-container" ng-class="{\'loading\': loading}">' +
+					'<div ng-if="message && !loading && !timers" list-message="message"></div>' +
+					'<div ng-repeat="n in timers.range()" class="row-fluid" id="concat(elementId, \'row\', $index)">' +
+						'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="concat(\'counter\', item.id)"></div>' +
 					'</div>' +
 				'</div>',
 			replace: true
