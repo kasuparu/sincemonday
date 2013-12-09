@@ -131,8 +131,9 @@ timerApp.controller('appDataController', ['$scope', function($scope) {
 			$scope.siteName = appData.siteName;
 		}
 		
-		if (appData && appData.user) {
-			$scope.appUser = appData.user;
+		if (appData && appData.screen_name) {
+			$scope.appUser = {};
+			$scope.appUser.screen_name = appData.screen_name;
 		}
 	}
 }]);
