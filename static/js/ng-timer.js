@@ -47,7 +47,9 @@ var timerApp = angular.module('timerApp', [
 timerApp
 	.config(['$routeProvider', '$locationProvider',
 		function($routeProvider, $locationProvider) {
-			$locationProvider.hashPrefix('!');
+			$locationProvider
+				.html5Mode(false)
+				.hashPrefix('!');
 			
 			$routeProvider
 				.when('/u/:screen_name/', {
@@ -65,10 +67,43 @@ timerApp
 								'<p class="lead">{{headerTextFriends}}</p>' +
 							'</div>' +
 						'</div>' + 
-						'<div id="friendcountercontainer" timer-list="timerListFriendsUrl" timer-list-message="friendsMessage"></div>'
+						'<div ng-if="headerTextFriends" id="friendcountercontainer" timer-list="timerListFriendsUrl" timer-list-message="friendsMessage"></div>'
+				})
+				.when('/', {
+					controller: 'aboutPageController',
+					template: '' +
+					'<div class="smallspace"></div>' +
+					'<div class="row-fluid">' +
+						'<div class="span2 visible-desktop">' +
+						'</div>' +
+						'<div class="span4">' +
+							'<h1>{{siteName}}</h1>' +
+							'<p>' +
+								'Понедельник — чудесный день. С понедельника мы начинаем бегать по утрам, добросовестно учиться, звонить родителям каждое воскресенье, бросаем курить, тратить деньги на ненужные вещи и ругаться матом.' +
+							'</p>' +
+							'<div class="smallspace"></div>' +
+							'<p ng-if="appUser && appUser.screen_name">' +
+								'Вы вошли как {{appUser.screen_name}}.' +
+							'</p>' +
+							'<p ng-if="!appUser || !appUser.screen_name">' +
+								'{{siteName}} позволяет создавать таймеры как раз для подобных начинаний. Чтобы создать свой таймер, нажмите <a href="/auth/twitter"><img src="https://si0.twimg.com/images/dev/buttons/sign-in-with-twitter-l.png" /></a> и следите за тем, сколько времени прошло с вашего личного понедельника.' +
+							'</p>' +
+						'</div>' +
+						'<div class="span4">' +
+							'<div class="row-fluid">' +
+								'<div timer="" timer-load="74" class="span12" id="counter74"></div>' +
+							'</div>' +
+							'<div class="row-fluid">' +
+								'<div timer="" timer-load="0" class="span12" id="counter0"></div>' +
+							'</div>' +
+						'</div>' +
+					'</div>' +
+					'<hr>' +
+					'<div class="row-fluid"><div class="span12"><p class="lead">Случайные таймеры</p></div></div>' +
+					'<div id="aboutcontainer" timer-list="timerListUrl" timer-list-message="message"></div>'
 				})
 				.otherwise({
-					redirectTo: '/' // Change that!
+					redirectTo: '/'
 				});
 		}
 	]);
@@ -78,9 +113,28 @@ timerApp.controller('userPageController', ['$scope', '$routeParams', function($s
 	$scope.timerListUrl = '/u/' + $routeParams.screen_name;
 	$scope.message = {'text': 'У пользователя нет публичных таймеров.'};
 	
-	$scope.headerTextFriends = 'Таймеры друзей'; //TODO: EMPTY IF PAGE USER IS NOT OWNER
-	$scope.timerListFriendsUrl = '/f/' + $routeParams.screen_name;
-	$scope.friendsMessage = {'text': ''};
+	if ($scope.appUser && $scope.appUser.screen_name && $routeParams.screen_name == $scope.appUser.screen_name) {
+		$scope.headerTextFriends = 'Таймеры друзей';
+		$scope.timerListFriendsUrl = '/f/' + $routeParams.screen_name;
+		$scope.friendsMessage = {'text': ''};
+	}
+}]);
+
+timerApp.controller('aboutPageController', ['$scope', function($scope) {
+	$scope.timerListUrl = '/u/random';
+	$scope.message = {'text': ''};
+}]);
+
+timerApp.controller('appDataController', ['$scope', function($scope) {
+	$scope.init = function(appData) {
+		if (appData && appData.siteName) {
+			$scope.siteName = appData.siteName;
+		}
+		
+		if (appData && appData.user) {
+			$scope.appUser = appData.user;
+		}
+	}
 }]);
 
 timerApp.controller('collapsibleMenuController', ['$scope', function($scope) {
@@ -192,6 +246,17 @@ timerApp.factory('timerFactory', function($http, $location) {
 });
 
 timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', function($scope, $location, timerFactory) {
+	$scope.specifyTime = false;
+	$scope.iSpecifyTime = function() {
+		$scope.specifyTime = !$scope.specifyTime;
+		
+		$scope.$watch('editableTimer.last_restart_date', function(newValue, oldValue, scope) {
+			if (newValue instanceof Date) {
+				scope.editableTimer.last_restart = Math.round(newValue.getTime() / 1000);
+			}
+		});
+	}
+	
 	$scope.show = function(id) {
 		$scope.loading = true;
 		timerFactory.getTimerAsync(id, function(results) {
@@ -202,6 +267,11 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 			$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
 		});
 	};
+	
+	if ($scope.timerLoad != 'undefined' && !isNaN(parseInt($scope.timerLoad))) {
+		$scope.show(parseInt($scope.timerLoad));
+	}
+	
 	$scope.edit = function() {
 		$scope.editor = true;
 		$scope.editableTimer = $scope.timer;
@@ -463,9 +533,10 @@ timerApp
 		return {
 			restrict: 'A',
 			scope: {
-				timer: '=timer',
+				timer: '=?timer',
 				editor: '@editor',
-				elementId: '=id'
+				elementId: '=?id',
+				timerLoad: '=?timerLoad'
 			},
 			controller: 'timerController',
 			template: '' +
@@ -476,7 +547,7 @@ timerApp
 					'\'timer-neutral\': !timer.denied && (timer.good != 1) && (timer.good != 0),' +
 					'\'timer-public\': !timer.denied && timer.public == 1,' +
 					'\'timer-private\': !timer.denied && timer.public == 0' +
-				'}" class="span4 well timer" editor="false">' +
+				'}" class="well timer" editor="false">' +
 					/* Timer show */
 					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class="icon-good"><i ng-class="{' +
 						'\'icon-thumbs-up\': timer.good == 1,' +
@@ -488,7 +559,7 @@ timerApp
 						'\'icon-eye-close\': timer.public == 0' +
 					'}"></i></div>' +
 					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class="icon-name" ng-if="timer.owner_name">' +
-						'<a ng-href="/u/{{timer.owner_name}}">{{timer.owner_name}}</a>' +
+						'<a ng-href="#!/u/{{timer.owner_name}}">{{timer.owner_name}}</a>' +
 					'</div>' +
 					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class=""><center>{{timer.name}}</center></div>' +
 					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class="" id="{{elementId}}time" timer-time="timer.last_restart"></div>' + // TIME HERE
@@ -520,15 +591,18 @@ timerApp
 								'<span class="add-on" ng-class="{\'error\': editableTimer.name.$error.maxlength}">{{nameLengthLeft}}</span>' +
 							'</center></div>' +
 							'<div class=""><center>' +
-								'<span ng-if="timer.id == -1" timer-date-time="editableTimer.last_restart_date">' +
-									'<a class="btn" id="{{elementId}}date_link"><i class="icon-calendar"></i> Начать ранее</a>' +
+								'<span ng-if="timer.id == -1">' +
+									'<a class="btn" ng-if="!specifyTime" ng-click="iSpecifyTime()"><i class="icon-calendar"></i> Начать ранее</a>' +
+									'<span timer-date-time="editableTimer.last_restart_date" ng-if="specifyTime"></span>' + 
 								'</span>&nbsp;' +
 								'<span>' +
 									'<label class="checkbox inline" tooltip-html-unsafe="&lt;span class=&quot;timer-good background-good&quot;&gt;&lt;i class=&quot;icon-thumbs-up timer-good&quot;&gt;&lt;/i&gt; — хорошие события и привычки.&lt;/span&gt; Пример: «Не курю».&lt;br /&gt;&lt;span class=&quot;timer-bad background-bad&quot;&gt;&lt;i class=&quot;icon-thumbs-down timer-bad&quot;&gt;&lt;/i&gt; — плохие события или вредные привычки.&lt;/span&gt; Пример: «Не видел родителей»." tooltip-placement="bottom" tooltip-title="Позитивный">' +
 									'<input type="checkbox" ng-model="editableTimer.good"> <span class="timer-good background-good"><i class="icon-thumbs-up"></i></span></label>&nbsp;' +
 								'</span>' +
-								'<label class="checkbox inline" tooltip-html-unsafe="&lt;i class=&quot;icon-eye-open&quot;&gt;&lt;/i&gt; — таймер виден всем посетителям страницы профиля.&lt;br /&gt;&lt;i class=&quot;icon-eye-close&quot;&gt;&lt;/i&gt; — таймер виден исключительно владельцу." tooltip-placement="bottom" tooltip-title="Виден всем">' +
-								'<input type="checkbox" ng-model="editableTimer.public"> <i class="icon-eye-open"></i></label>' +
+								'<span>' +
+									'<label class="checkbox inline" tooltip-html-unsafe="&lt;i class=&quot;icon-eye-open&quot;&gt;&lt;/i&gt; — таймер виден всем посетителям страницы профиля.&lt;br /&gt;&lt;i class=&quot;icon-eye-close&quot;&gt;&lt;/i&gt; — таймер виден исключительно владельцу." tooltip-placement="bottom" tooltip-title="Виден всем">' +
+									'<input type="checkbox" ng-model="editableTimer.public"> <i class="icon-eye-open"></i></label>' +
+								'</span>' +
 							'</center></div>' +
 						'</form>' +
 						'<div class=""><center>' +
@@ -562,7 +636,7 @@ timerApp
 				'<div class="container-fluid counter-container" ng-class="{\'loading\': loading}">' +
 					'<div ng-if="message && !loading && !timers" list-message="message"></div>' +
 					'<div ng-repeat="n in timers.range()" class="row-fluid" id="concat(elementId, \'row\', $index)">' +
-						'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="concat(\'counter\', item.id)"></div>' +
+						'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="concat(\'counter\', item.id)" class="span4"></div>' +
 					'</div>' +
 				'</div>',
 			replace: true
@@ -650,8 +724,99 @@ timerApp
 			template: '' +
 				'<span class="input-prepend date">' +
 					'<span class="add-on"><i class="icon-th"></i></span>' +
-					'<input class="span6 date-input" size="16" type="text" ng-model="lastUpdate" datepicker-popup="dd.MM.yyyy H:mm" datepicker-options="{\'starting-day\': 1}">' +
+					'<input class="span6 date-input" size="16" type="text" ng-model="lastUpdate" datepicker-popup="dd.MM.yyyy H:mm" datepicker-options="{\'starting-day\': 1}" date-fix="">' +
 				'</span>',
 			replace:true
 		};
-	});
+	})
+	// Modified http://developer.the-hideout.de/?p=119 for custom date format applying
+	.directive('dateFix', ['dateFilter', 'datepickerPopupConfig', function(dateFilter, datepickerPopupConfig) {
+		// return the directive link function. (compile function not needed)
+		return {
+			restrict: 'EA',
+			require: 'ngModel', // get a hold of NgModelController
+	 
+			link: function(scope, element, attrs, ngModel) {
+	 
+				var format = attrs.datepickerPopup;
+				var maxDate = scope[attrs.max];
+				var minDate = scope[attrs.min];
+				var datefilter = dateFilter;
+				var model = ngModel;
+	 
+				ngModel.$parsers.push(function(viewValue) {
+					var newDate = model.$viewValue;
+					var date = null;
+	 
+					// pass through if we clicked date from popup
+					if (typeof newDate === "object" || newDate == "") return newDate;
+	 
+					// build a new date according to initial localized date format
+					if (format === "dd.MM.yyyy") {
+						// extract day, month and year
+						var splitted = newDate.split('.');
+	 
+						var month = parseInt(splitted[1]) - 1;
+						date = new Date(splitted[2], month, splitted[0]);
+						// if maxDate,minDate is set make sure we do not allow greater values
+						if (maxDate && date > maxDate) date = maxDate;
+						if (minDate && date < minDate) date = minDate;                    
+	 
+						model.$setValidity('date', true);
+						model.$setViewValue(date);
+					}
+					if (format === "dd.MM.yyyy H:mm") {
+						// extract day, month and year
+						var splitted_date_time = newDate.split(' ');
+						var splitted_date = splitted_date_time[0].split('.');
+						var splitted_time = splitted_date_time[1].split(':');
+	 
+						var month = parseInt(splitted_date[1]) - 1;
+						date = new Date(splitted_date[2], month, splitted_date[0], splitted_time[0], splitted_time[1]);
+						// if maxDate,minDate is set make sure we do not allow greater values
+						if (maxDate && date > maxDate) date = maxDate;
+						if (minDate && date < minDate) date = minDate;                    
+	 
+						model.$setValidity('date', true);
+						model.$setViewValue(date);
+					}
+					return date ? date : viewValue;
+				});
+				
+				// jqLite#on() does not support the `selector` or `eventData` parameters
+				/*element.on('keydown', {scope:scope, varOpen:attrs.isOpen}, function(e) {
+					var response = true;
+					// the scope of the date control
+					var scope = e.data.scope;
+					// the variable name for the open state of the popup (also controls it!)
+					var openId = e.data.varOpen;
+	 
+					switch (e.keyCode) {
+					case 13: // ENTER
+						scope[openId] = !scope[openId];
+						// update manually view
+						if (!scope.$$phase) scope.$apply();
+						response = false;
+						break;
+	 
+					case 9: // TAB
+						scope[openId] = false;
+						// update manually view
+						if (!scope.$$phase) scope.$apply();
+						break;
+					}
+	 
+					return response;
+				});*/
+	 
+				// set input to the value set in the popup, which can differ if input was manually!
+				element.on('blur', function(e) {
+					// the value is an object if date has been changed! Otherwise it was set as a string.
+					if (typeof model.$viewValue === "object") {
+						element.context.value = isNaN(model.$viewValue) ? "" : dateFilter(model.$viewValue, format);
+						if (element.context.value == "") model.$setValidity('required', false);                    
+					}
+				});
+			}
+		};
+	}]);

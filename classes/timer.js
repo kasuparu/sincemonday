@@ -50,6 +50,25 @@ Timer.findById = function(id, callback) {
     });
 };
 
+Timer.findByIds = function(ids, callback) {
+	Timer.config.MongoDB.MongoClient.connect(Timer.config.cfg.mongo.uri + '/' + Timer.config.cfg.mongo.db + (Timer.config.cfg.mongo.options || ''), function(err, db) {
+		if (err) return callback(err, null);
+		
+		var timerList = [];
+		var cursor = db.collection('timers').find({id: {$in: ids}}).sort('last_restart');
+			cursor.each(function(err, timer) {
+				if (!err && timer) {
+					timer.set = 1
+					timerList.push(timer);
+				}
+				if (timer == null) {
+					Timer.config.User.timerListFillNames(timerList, callback);
+					db.close();
+				}
+			});
+    });
+};
+
 Timer.prototype.getOwner = function(callback) {
 	Timer.config.User.findById(this.owner, function(user) {
 		callback(user);
@@ -228,6 +247,16 @@ Timer.regenerateHandle = function(handleName, callback) {
 			callback(err, handle);
 		});
 	}
+}
+
+Timer.getHandleTimers = function(handleName, callback) {
+	Timer.getHandle(handleName, function(err, handle) {
+		if (handle && handle.ids) {
+			Timer.findByIds(handle.ids, callback);
+		} else {
+			callback(err, null);
+		}
+	});
 }
 
 Timer.saveHandle = function(handleName, setObject, callback) {

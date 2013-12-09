@@ -239,17 +239,17 @@ app.get('/t/:id(-?\\d+)/set', function(req, res) {
 					var goodVal = req.query.good;
 					var publicVal = req.query.public;
 					if (parseInt(req.query.id) == -1) {
-						if (typeof req.query.last_update != 'undefined' && req.query.last_update && req.query.last_update != '-1' && !isNaN(parseInt(req.query.last_update))) {
-							var last_update = parseInt(req.query.last_update);
+						if (typeof req.query.last_restart != 'undefined' && req.query.last_restart && req.query.last_restart != '-1' && !isNaN(parseInt(req.query.last_restart))) {
+							var last_restart = parseInt(req.query.last_restart);
 							var date_selected = 1;
 						} else {
-							var last_update = Math.round(new Date().getTime() / 1000);
+							var last_restart = Math.round(new Date().getTime() / 1000);
 							var date_selected = 0;
 						}
 					} else {
-						var last_update = -1;
+						var last_restart = -1;
 					}
-					timer.setProps(label, userId, last_update, date_selected);
+					timer.setProps(label, userId, last_restart, date_selected);
 					timer.setGood(goodVal);
 					timer.setPublic(publicVal);
 					timer.save(function(err, timer) {
@@ -271,12 +271,13 @@ app.get('/t/:id(-?\\d+)/set', function(req, res) {
 	};
 });
 
-app.get('/u/random/list', function(req, res) {
+app.get('/u/random/:action(list|timers)', function(req, res) {
     res.setHeader('content-type', jsonContentType);
-	Timer.getHandle('about_3random', function(err, handle) {
+	var action = req.params.action == 'list' ? 'getHandle' : 'getHandleTimers';
+	
+	Timer[action]('about_3random', function(err, handle) {
 		if (handle) {
-			var nowTimestamp = Math.round(new Date().getTime() / 1000);
-			res.send(handle.ids);
+			res.send(action == 'list' ? handle.ids : handle);
 		} else {
 			res.send([]);
 		}

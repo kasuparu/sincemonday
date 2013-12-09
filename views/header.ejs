@@ -49,7 +49,7 @@
 		<script type="text/javascript" src="/js/ui-bootstrap-tpls-0.7.0.min.js"></script>
 		<script type="text/javascript" src="/js/ng-timer.js"></script>
 	</head>
-<body data-spy="scroll">
+<body data-spy="scroll" ng-controller="appDataController" ng-init="init({siteName: '<%= siteName %>'<% if (user && user.screen_name) { %>, screen_name:'<%=user.screen_name %>'<% } %>})"> 
 <div id="menubar" class="navbar navbar-fixed-top" ng-controller="collapsibleMenuController">
 	<div id="menubar_container" class="navbar-inner">
 	<div class="container">
@@ -68,7 +68,7 @@
 			</a>
 			<ul class="dropdown-menu">
 				<li>
-					<a href="/u/<%=htmlEntities(user.screen_name) %>">Профиль</a>
+					<a href="#!/u/<%=htmlEntities(user.screen_name) %>">Профиль</a>
 				</li>
 				<li class="divider"></li>
 				<li>
@@ -83,7 +83,7 @@
 			<ul class="nav">
 <% 		if (user && user.screen_name) { %>
 				<li class="<% if (activePage == 'user' && user  && owner && user.screen_name == owner.logged_in) { %> active <% } %>">
-					<a href="/u/<%=htmlEntities(user.screen_name) %>"><i class="icon-white icon-user"></i>
+					<a href="#!/u/<%=htmlEntities(user.screen_name) %>"><i class="icon-white icon-user"></i>
 					<span class="hidden-desktop pull-right">
 						<%=htmlEntities(user.screen_name) %>
 					</span>
