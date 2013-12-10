@@ -5,30 +5,13 @@
 		<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="/favicon.ico" />
 		<link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico" />
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		<!-- 
-		<script type="text/javascript" src="/plusstrap/docs/assets/js/jquery.js"></script>
-		-->
 		<link rel="stylesheet" type="text/css" href="/plusstrap/docs/assets/css/plusstrap.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" type="text/css" href="/plusstrap/docs/assets/css/plusstrap-responsive.css" />
 		<link rel="stylesheet" type="text/css" href="/plusstrap/docs/assets/css/docs.css" />
 		<link rel="stylesheet" type="text/css" href="/default.css" />
-		<!--
-		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-transition.js"></script>
-		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-dropdown.js"></script>
-		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-scrollspy.js"></script>
-		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-tooltip.js"></script>
-		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-popover.js"></script>
-		<script type="text/javascript" src="/plusstrap/docs/assets/js/bootstrap-collapse.js"></script>
-		-->
 		<script type="text/javascript" src="/js/timer.js"></script>
 		<script type="text/javascript" src="/js/jsDate.js"></script>
-		<!--
-		<link rel="stylesheet" type="text/css" href="/datepicker/css/datepicker.css" />
-		<script type="text/javascript" src="/datepicker/js/bootstrap-datepicker.js"></script>
-		<link rel="stylesheet" type="text/css" href="/bootstrap-timepicker/compiled/timepicker.css" />
-		<script type="text/javascript" src="/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
-		-->
 		
 		<script type="text/javascript">
 
@@ -79,10 +62,10 @@
 <%
 		}
 %>
-		<div id="menubar_navigation" class="nav-collapse" collapse="isCollapsed">
+		<div id="menubar_navigation" class="nav-collapse" collapse="isCollapsed" ng-controller="activePageController">
 			<ul class="nav">
 <% 		if (user && user.screen_name) { %>
-				<li class="<% if (activePage == 'user' && user  && owner && user.screen_name == owner.logged_in) { %> active <% } %>">
+				<li ng-class="{'active': getActivePage() == 'user'}">
 					<a href="#!/u/<%=htmlEntities(user.screen_name) %>"><i class="icon-white icon-user"></i>
 					<span class="hidden-desktop pull-right">
 						<%=htmlEntities(user.screen_name) %>
@@ -92,7 +75,7 @@
 <%
 		}
 %>
-				<li class="<% if (activePage == 'about') { %> active <% } %>">
+				<li ng-class="{'active': getActivePage() == 'about'}">
 					<a href="/"><i class="icon-white icon-home"></i>
 					<span class="hidden-desktop pull-right">
 						<%= siteName %>

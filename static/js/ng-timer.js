@@ -108,21 +108,44 @@ timerApp
 		}
 	]);
 
-timerApp.controller('userPageController', ['$scope', '$routeParams', function($scope, $routeParams) {
+timerApp.value('appValues', {'activePage': 'about'});
+
+timerApp.factory('activePage', ['appValues', function(appValues) {
+	return {
+		get: function() {
+			return appValues.activePage;
+		},
+		set: function(value) {
+			return appValues.activePage = value;
+		}
+	};
+}]);
+
+timerApp.controller('activePageController', ['$scope', 'activePage', function($scope, activePage) {
+	$scope.getActivePage = activePage.get;
+}]);
+
+timerApp.controller('userPageController', ['$scope', '$routeParams', 'activePage', function($scope, $routeParams, activePage) {
 	$scope.headerText = $routeParams.screen_name;
 	$scope.timerListUrl = '/u/' + $routeParams.screen_name;
 	$scope.message = {'text': 'У пользователя нет публичных таймеров.'};
+	
+	activePage.set('');
 	
 	if ($scope.appUser && $scope.appUser.screen_name && $routeParams.screen_name == $scope.appUser.screen_name) {
 		$scope.headerTextFriends = 'Таймеры друзей';
 		$scope.timerListFriendsUrl = '/f/' + $routeParams.screen_name;
 		$scope.friendsMessage = {'text': ''};
+		
+		activePage.set('user');
 	}
 }]);
 
-timerApp.controller('aboutPageController', ['$scope', function($scope) {
+timerApp.controller('aboutPageController', ['$scope', 'activePage', function($scope, activePage) {
 	$scope.timerListUrl = '/u/random';
 	$scope.message = {'text': ''};
+	
+	activePage.set('about');
 }]);
 
 timerApp.controller('appDataController', ['$scope', function($scope) {
@@ -567,13 +590,13 @@ timerApp
 					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class=""><center>' + 
 						'<a class="btn btn-danger" ng-if="timer.can_edit || timer.id == 0" ng-click="restart()"><i class="icon-white icon-repeat"></i> Сброс</a>' + 
 						' <a ng-if="timer.public == 1" timer-twitter-link></a>' +
-						' <a class="btn" ng-click="edit()">&nbsp;<i class="icon-pencil"></i>&nbsp;</a>' +
+						' <a class="btn" ng-if="timer.can_edit" ng-click="edit()">&nbsp;<i class="icon-pencil"></i>&nbsp;</a>' +
 					'</center></div>' +
 					/* Timer denied */
 					'<div ng-if="timer.set && timer.denied" ng-hide="editor" class=""><center>Доступ к таймеру запрещён</center></div>' +
 					/* Timer create */
-					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center><h3>Создать таймер</h3></center></p></div>' +
-					'<div ng-if="!timer.set" ng-hide="editor" class=""><center> <a class="btn btn-success btn-large" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a></center></div>' +
+					'<div ng-if="!timer.set && !loading" ng-hide="editor" class=""><p><center><h3>Создать таймер</h3></center></p></div>' +
+					'<div ng-if="!timer.set && !loading" ng-hide="editor" class=""><center> <a class="btn btn-success btn-large" ng-click="edit()" ng-if="timer.id == -1"><i class="icon-white icon-plus"></i> Добавить</a></center></div>' +
 					'<div ng-if="!timer.set" ng-hide="editor" class=""><p><center> </center></p></div>' +
 					/* Editor */
 					'<div ng-if="!timer.denied" ng-show="editor" class="icon-good"><i ng-class="{' +

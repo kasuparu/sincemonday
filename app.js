@@ -101,8 +101,9 @@ app.configure(function(){
 	app.enable('trust proxy');
 });
 
+// Pages
 app.get('/', function(req, res) {
-	res.render('about', {
+	res.render('ng', {
 		user: (req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) ? req.session.auth.twitter.user : {},
 		siteName: cfg.siteName,
 		softwareBuild: softwareBuild,
@@ -117,9 +118,10 @@ app.get('/me', function(req, res) {
 	} else {
 		userName = '';
 	}
-	res.redirect(userName ? '/u/' + userName : '/');
+	res.redirect(userName ? '/#!/u/' + userName : '/');
 });
 
+// API
 app.get('/t/:id(-?\\d+)/show', function(req, res) {
     res.setHeader('content-type', jsonContentType);
 	if (req.params.id != 'undefined' && !isNaN(req.params.id)) {
@@ -347,30 +349,6 @@ app.get('/f/:screen_name/show', function(req, res) {
 		} else {
 			res.send([]);
 		}
-	});
-});
-
-app.get('/u/:screen_name', function(req, res) {
-    User.findByName(req.params.screen_name, function(owner) {
-		res.render('user', {
-			owner: owner,
-			user: (req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) ? req.session.auth.twitter.user : {},
-			siteName: cfg.siteName,
-			softwareBuild: softwareBuild,
-			htmlEntities: htmlEntities,
-			activePage: 'user'
-		});
-	});
-	
-});
-
-app.get('/ng', function(req, res) {
-	res.render('ng', {
-		user: (req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) ? req.session.auth.twitter.user : {},
-		siteName: cfg.siteName,
-		softwareBuild: softwareBuild,
-		htmlEntities: htmlEntities,
-		activePage: 'about'
 	});
 });
 
