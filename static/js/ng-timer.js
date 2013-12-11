@@ -174,13 +174,13 @@ timerApp.controller('collapsibleMenuController', ['$scope', function($scope) {
  *    \____/_|___/\__|
  *                    
  */
-timerApp.factory('timerListFactory', function($http) {
+timerApp.factory('timerListFactory', ['$http', function($http) {
 	return {
 		getTimerListAsync: function(url, callback) {
 			$http.get(url + '/timers').success(callback);
 		}
 	};
-});
+}]);
 
 timerApp.controller('timerListController', ['$scope', 'timerFactory', 'timerListFactory', function($scope, timerFactory, timerListFactory) {
 	$scope.loading = true;
@@ -248,7 +248,7 @@ timerApp.controller('timerListController', ['$scope', 'timerFactory', 'timerList
  *     \/   |_|_| |_| |_|\___|_|   
  *                                 
  */
-timerApp.factory('timerFactory', function($http, $location) {
+timerApp.factory('timerFactory', ['$http', '$location', function($http, $location) {
 	return {
 		getTimerAsync: function(id, callback) {
 			$http.get('/t/' + id + '/show').success(callback);
@@ -267,9 +267,9 @@ timerApp.factory('timerFactory', function($http, $location) {
 			$http.get('/t/' + id + '/remove').success(callback);
 		},
 	};
-});
+}]);
 
-timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', function($scope, $location, timerFactory) {
+timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', 'focusFactory', function($scope, $location, timerFactory, focusFactory) {
 	$scope.specifyTime = false;
 	$scope.iSpecifyTime = function() {
 		$scope.specifyTime = !$scope.specifyTime;
@@ -279,6 +279,8 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
 				scope.editableTimer.last_restart = Math.round(newValue.getTime() / 1000);
 			}
 		});
+		
+		focusFactory('specifyTime');
 	}
 	
 	$scope.show = function(id) {
@@ -374,7 +376,7 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', f
  *     \/   |_|_| |_| |_|\___|_|  \/   |_|_| |_| |_|\___|
  *                                                       
  */
-timerApp.factory('timerTimeFactory', function($http) {
+timerApp.factory('timerTimeFactory', ['$http', function($http) {
 	return {
 		timerGetTime: function(last_restart, format, debug) {
 			debug = debug || 0;
@@ -487,7 +489,7 @@ timerApp.factory('timerTimeFactory', function($http) {
 			return time;
 		},
 	};
-});
+}]);
 
 timerApp.controller('timerTimeController', ['$scope', '$timeout', 'timerTimeFactory', function($scope, $timeout, timerTimeFactory) {
 	var stop;
@@ -745,12 +747,31 @@ timerApp
 			scope: {
 				lastUpdate: '=timerDateTime'
 			},
+			controller: function($scope) {
+				$scope.lastUpdate = new Date();
+			},
 			template: '' +
 				'<span class="input-prepend date">' +
 					'<span class="add-on"><i class="icon-th"></i></span>' +
-					'<input class="span6 date-input" size="16" type="text" ng-model="lastUpdate" datepicker-popup="dd.MM.yyyy H:mm" datepicker-options="{\'starting-day\': 1}" date-fix="">' +
+					'<input class="span6 date-input" size="16" type="text" ng-model="lastUpdate" datepicker-popup="dd.MM.yyyy H:mm" datepicker-options="{\'starting-day\': 1}" date-fix="" is-open="$parent.opened" focus-on="specifyTime">' +
 				'</span>',
 			replace:true
+		};
+	})
+	.factory('focusFactory', ['$rootScope', '$timeout', function($rootScope, $timeout) {
+		return function(name) {
+			$timeout(function() {
+				$rootScope.$broadcast('focusOn', name);
+			});
+		};
+	}])
+	.directive('focusOn', function() {
+		return function(scope, element, attrs) {
+			scope.$on('focusOn', function(event, name) {
+				if (name === attrs.focusOn) {
+					element[0].focus();
+				}
+			});
 		};
 	})
 	// Modified http://developer.the-hideout.de/?p=119 for custom date format applying
@@ -837,6 +858,10 @@ timerApp
 				element.on('blur', function(e) {
 					// the value is an object if date has been changed! Otherwise it was set as a string.
 					if (typeof model.$viewValue === "object") {
+						// Fix "element.context is undefined" error
+						if (typeof element.context === 'undefined') {
+							element.context = {};
+						}
 						element.context.value = isNaN(model.$viewValue) ? "" : dateFilter(model.$viewValue, format);
 						if (element.context.value == "") model.$setValidity('required', false);                    
 					}
