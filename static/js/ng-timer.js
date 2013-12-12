@@ -152,7 +152,7 @@ timerApp.controller('userPageController', ['$scope', '$routeParams', 'activePage
 }]);
 
 timerApp.controller('relationshipPageController', ['$scope', '$routeParams', 'activePage', function($scope, $routeParams, activePage) {
-	$scope.headerText = 'Взаимноотношения ' + $routeParams.screen_name;
+	$scope.headerText = 'Взаимноотношения @' + $routeParams.screen_name;
 	$scope.relationshipListUrl = '/r/' + $routeParams.screen_name;
 	$scope.message = {'text': 'Данные пока что не загружены.'};
 	
@@ -926,6 +926,14 @@ timerApp
 			}
 		};
 	}])
+/***
+ *       __      _       _   _                 
+ *      /__\ ___| | __ _| |_(_) ___  _ __  ___ 
+ *     / \/// _ \ |/ _` | __| |/ _ \| '_ \/ __|
+ *    / _  \  __/ | (_| | |_| | (_) | | | \__ \
+ *    \/ \_/\___|_|\__,_|\__|_|\___/|_| |_|___/
+ *                                             
+ */
 	.directive('relationshipList', function() {
 		return {
 			restrict: 'A',
@@ -940,7 +948,6 @@ timerApp
 					'<div ng-if="message && !loading && !relationships" list-message="message"></div>' +
 					'<div ng-if="!loading && relationships" class="row-fluid"><div class="span12"><table class="table table-condensed">' +
 						'<thead>' +
-							'<th></th>' +
 							'<th>Профиль</th>' +
 							'<th>Друзей</th>' +
 							'<th>Подписчиков</th>' +
@@ -964,14 +971,17 @@ timerApp
 				'<tr id="{{elementId}}" ng-class="{' +
 					'\'success\': relationship.following && relationship.followed_by,' +
 					'\'error\': relationship.following && !relationship.followed_by,' +
-					'\'warning\': !relationship.following && relationship.followed_by' +
+					'\'info\': !relationship.following && relationship.followed_by' +
 				'}">' +
-					'<td><a ng-href="https://twitter.com/{{relationship.screen_name}}"  target="_blank"><img width="32" ng-if="relationship.profile_image_url_https" ng-src="{{relationship.profile_image_url_https}}" /></a></td>' +
-					'<td><a ng-href="https://twitter.com/{{relationship.screen_name}}"  target="_blank">{{relationship.screen_name}}</a></td>' +
-					'<td>{{relationship.friends_count}}</td>' +
-					'<td>{{relationship.followers_count}}</td>' +
-					'<td>{{relationship.following}}</td>' +
-					'<td>{{relationship.followed_by}}</td>' +
+					'<td class=""><a class="black-link" ng-href="https://twitter.com/{{relationship.screen_name}}"  target="_blank"><img class="mr5" width="24" ng-if="relationship.profile_image_url_https" ng-src="{{relationship.profile_image_url_https}}" /><strong>{{relationship.screen_name}}</strong></a></td>' +
+					'<td class=""><span>{{relationship.friends_count}}</span></td>' +
+					'<td class=""><span>{{relationship.followers_count}}</span></td>' +
+					'<td class=""><label>{{relationship.following}}</label></td>' +
+					'<td class="" ng-class="{' +
+						'\'success\': relationship.following && relationship.followed_by,' +
+						'\'error\': relationship.following && !relationship.followed_by,' +
+						'\'info\': !relationship.following && relationship.followed_by' +
+					'}"><span>{{relationship.followed_by}}</span></td>' +
 				'</tr>'
 		};
 	});

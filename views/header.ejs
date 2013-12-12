@@ -52,6 +52,9 @@
 				<li>
 					<a href="#!/u/<%=htmlEntities(user.screen_name) %>">Профиль</a>
 				</li>
+				<li>
+					<a href="#!/r/<%=htmlEntities(user.screen_name) %>">Взамоотношения</a>
+				</li>
 				<li class="divider"></li>
 				<li>
 					<a href="/logout">Выход</a>
@@ -68,6 +71,14 @@
 					<a href="#!/u/<%=htmlEntities(user.screen_name) %>"><i class="icon-white icon-user"></i>
 					<span class="hidden-desktop pull-right">
 						<%=htmlEntities(user.screen_name) %>
+					</span>
+					</a>
+				</li>
+				
+				<li ng-class="{'active': getActivePage() == 'relationships'}">
+					<a href="#!/r/<%=htmlEntities(user.screen_name) %>"><i class="icon-white icon-user"></i>
+					<span class="hidden-desktop pull-right">
+						Взамоотношения
 					</span>
 					</a>
 				</li>
