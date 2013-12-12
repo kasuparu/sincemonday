@@ -69,6 +69,16 @@ timerApp
 						'</div>' + 
 						'<div ng-if="headerTextFriends" id="friendcountercontainer" timer-list="timerListFriendsUrl" timer-list-message="friendsMessage"></div>'
 				})
+				.when('/r/:screen_name/', {
+					controller: 'relationshipPageController',
+					template: '' + 
+						'<div class="row-fluid">' +
+							'<div class="span12">' +
+								'<p class="lead">{{headerText}}</p>' +
+							'</div>' +
+						'</div>' + 
+						'<div id="container" relationship-list="relationshipListUrl" relationship-list-message="message"></div>'
+				})
 				.when('/', {
 					controller: 'aboutPageController',
 					template: '' +
@@ -138,6 +148,18 @@ timerApp.controller('userPageController', ['$scope', '$routeParams', 'activePage
 		$scope.friendsMessage = {'text': ''};
 		
 		activePage.set('user');
+	}
+}]);
+
+timerApp.controller('relationshipPageController', ['$scope', '$routeParams', 'activePage', function($scope, $routeParams, activePage) {
+	$scope.headerText = 'Взаимноотношения ' + $routeParams.screen_name;
+	$scope.relationshipListUrl = '/r/' + $routeParams.screen_name;
+	$scope.message = {'text': 'Данные пока что не загружены.'};
+	
+	activePage.set('');
+	
+	if ($scope.appUser && $scope.appUser.screen_name && $routeParams.screen_name == $scope.appUser.screen_name) {
+		activePage.set('relationships');
 	}
 }]);
 
@@ -539,6 +561,41 @@ timerApp.controller('timerTwitterLinkController', ['$scope', '$window', '$locati
 }]);
 
 /***
+ *       __      _       _   _                 
+ *      /__\ ___| | __ _| |_(_) ___  _ __  ___ 
+ *     / \/// _ \ |/ _` | __| |/ _ \| '_ \/ __|
+ *    / _  \  __/ | (_| | |_| | (_) | | | \__ \
+ *    \/ \_/\___|_|\__,_|\__|_|\___/|_| |_|___/
+ *                                             
+ */
+timerApp.factory('relationshipListFactory', ['$http', function($http) {
+	return {
+		getRelationshipListAsync: function(url, callback) {
+			$http.get(url + '/list').success(callback);
+		}
+	};
+}]);
+
+timerApp.controller('relationshipListController', ['$scope', 'relationshipListFactory', function($scope, relationshipListFactory) {
+	$scope.loading = true;
+	
+	$scope.concat = function() {
+		return Array.prototype.slice.call(arguments).join('');
+	}
+	
+	relationshipListFactory.getRelationshipListAsync($scope.relationshipListUrl, function(results) {
+		$scope.loading = false;
+		
+		if (results.length === 0) {
+			$scope.relationships = [];
+		} else {
+			$scope.relationships = results;
+			
+		}
+	});
+}]);
+
+/***
  *        ___ _               _   _                
  *       /   (_)_ __ ___  ___| |_(_)_   _____  ___ 
  *      / /\ / | '__/ _ \/ __| __| \ \ / / _ \/ __|
@@ -868,4 +925,53 @@ timerApp
 				});
 			}
 		};
-	}]);
+	}])
+	.directive('relationshipList', function() {
+		return {
+			restrict: 'A',
+			scope: {
+				relationshipListUrl: '=relationshipList',
+				elementId: '=id',
+				message: '=relationshipListMessage'
+			},
+			controller: 'relationshipListController',
+			template: '' +
+				'<div class="container-fluid relationship-container" ng-class="{\'loading\': loading}">' +
+					'<div ng-if="message && !loading && !relationships" list-message="message"></div>' +
+					'<div ng-if="!loading && relationships" class="row-fluid"><div class="span12"><table class="table table-condensed">' +
+						'<thead>' +
+							'<th></th>' +
+							'<th>Профиль</th>' +
+							'<th>Друзей</th>' +
+							'<th>Подписчиков</th>' +
+							'<th>Читаемый</th>' +
+							'<th>Читает вас</th>' +
+						'</thead>' +
+						'<tbody ng-repeat="item in relationships" relationship="item" class=""></tbody>' +
+					'</table></div></div>' +
+				'</div>',
+			replace: true
+		};
+	})
+	.directive('relationship', function() {
+		return {
+			restrict: 'A',
+			scope: {
+				relationship: '=?relationship',
+				elementId: '=?id'
+			},
+			template: '' +
+				'<tr id="{{elementId}}" ng-class="{' +
+					'\'success\': relationship.following && relationship.followed_by,' +
+					'\'error\': relationship.following && !relationship.followed_by,' +
+					'\'warning\': !relationship.following && relationship.followed_by' +
+				'}">' +
+					'<td><a ng-href="https://twitter.com/{{relationship.screen_name}}"  target="_blank"><img width="32" ng-if="relationship.profile_image_url_https" ng-src="{{relationship.profile_image_url_https}}" /></a></td>' +
+					'<td><a ng-href="https://twitter.com/{{relationship.screen_name}}"  target="_blank">{{relationship.screen_name}}</a></td>' +
+					'<td>{{relationship.friends_count}}</td>' +
+					'<td>{{relationship.followers_count}}</td>' +
+					'<td>{{relationship.following}}</td>' +
+					'<td>{{relationship.followed_by}}</td>' +
+				'</tr>'
+		};
+	});

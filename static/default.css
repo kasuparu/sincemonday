@@ -84,3 +84,7 @@ div.timer > div.icon-name {
   background-repeat: no-repeat;
   background-position: center center;
 }
+
+.relationship-container {
+  min-height: 40px;
+}

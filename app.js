@@ -8,6 +8,7 @@ var express = require('express'),
 	everyauth = require('everyauth'),
 	MongoStore = require('connect-mongo')(express),
 	MongoDB = require('mongodb'),
+	util = require('util'),
 	sessionCookieData = {key: 'connect.sid', maxAge: 360*24*60*60*1000, signed: true, httpOnly: true},
 	twitterAPI = require('node-twitter-api'),
 	twitter = new twitterAPI({
@@ -19,19 +20,21 @@ var express = require('express'),
 	User = require('./classes/user')({
 		MongoDB: MongoDB,
 		cfg: cfg,
-		twitter: twitter
+		twitter: twitter,
+		async: async
 	}),
 	Timer = require('./classes/timer'),
 	jsonContentType = 'application/json; charset=utf8';
 	
-	Timer.configure({
+Timer.configure({
 		MongoDB: MongoDB,
 		cfg: cfg,
 		twitter: twitter,
 		User: User,
 		async: async
-	}),
-	htmlEntities = function(str) {
+	});
+
+var htmlEntities = function(str) {
 		return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 	},
 	softwareBuild = '';
@@ -335,7 +338,7 @@ app.get('/f/:screen_name/:action(list|timers)', function(req, res) {
 	});
 });
 
-app.get('/f/:screen_name/show', function(req, res) {
+app.get('/r/:screen_name/list', function(req, res) {
     res.setHeader('content-type', jsonContentType);
 	if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
 		userId = req.session.auth.twitter.user.id;
@@ -344,8 +347,14 @@ app.get('/f/:screen_name/show', function(req, res) {
 	}
 	
 	User.findByName(req.params.screen_name, function(owner) {
-		if (owner && owner.id == userId) {
-			res.send(owner.friends_ids);
+		if (owner && owner.id && userId == owner.id) {
+			User.checkUpdateTwitterFriendsAndFollowers(owner, function(err, user) {
+				if (!err && user) {
+					res.send(user.relationships);
+				} else {
+					res.send([]);
+				}
+			});
 		} else {
 			res.send([]);
 		}
