@@ -116,76 +116,68 @@ timerApp
 					redirectTo: '/'
 				});
 		}
-	]);
-
-timerApp.value('appValues', {'activePage': 'about'});
-
-timerApp.factory('activePage', ['appValues', function(appValues) {
-	return {
-		get: function() {
-			return appValues.activePage;
-		},
-		set: function(value) {
-			return appValues.activePage = value;
-		}
-	};
-}]);
-
-timerApp.controller('activePageController', ['$scope', 'activePage', function($scope, activePage) {
-	$scope.getActivePage = activePage.get;
-}]);
-
-timerApp.controller('userPageController', ['$scope', '$routeParams', 'activePage', function($scope, $routeParams, activePage) {
-	$scope.headerText = $routeParams.screen_name;
-	$scope.timerListUrl = '/u/' + $routeParams.screen_name;
-	$scope.message = {'text': 'У пользователя нет публичных таймеров.'};
-	
-	activePage.set('');
-	
-	if ($scope.appUser && $scope.appUser.screen_name && $routeParams.screen_name == $scope.appUser.screen_name) {
-		$scope.headerTextFriends = 'Таймеры друзей';
-		$scope.timerListFriendsUrl = '/f/' + $routeParams.screen_name;
-		$scope.friendsMessage = {'text': ''};
+	])
+	.value('appValues', {'activePage': 'about'})
+	.factory('activePage', ['appValues', function(appValues) {
+		return {
+			get: function() {
+				return appValues.activePage;
+			},
+			set: function(value) {
+				return appValues.activePage = value;
+			}
+		};
+	}])
+	.controller('activePageController', ['$scope', 'activePage', function($scope, activePage) {
+		$scope.getActivePage = activePage.get;
+	}])
+	.controller('userPageController', ['$scope', '$routeParams', 'activePage', function($scope, $routeParams, activePage) {
+		$scope.headerText = $routeParams.screen_name;
+		$scope.timerListUrl = '/u/' + $routeParams.screen_name;
+		$scope.message = {'text': 'У пользователя нет публичных таймеров.'};
 		
-		activePage.set('user');
-	}
-}]);
-
-timerApp.controller('relationshipPageController', ['$scope', '$routeParams', 'activePage', function($scope, $routeParams, activePage) {
-	$scope.headerText = 'Взаимоотношения @' + $routeParams.screen_name;
-	$scope.relationshipListUrl = '/r/' + $routeParams.screen_name;
-	$scope.message = {'text': 'Данные не загружены. Попробуйте позже. Имеет смысл перезайти на сайт.'};
-	
-	activePage.set('');
-	
-	if ($scope.appUser && $scope.appUser.screen_name && $routeParams.screen_name == $scope.appUser.screen_name) {
-		activePage.set('relationships');
-	}
-}]);
-
-timerApp.controller('aboutPageController', ['$scope', 'activePage', function($scope, activePage) {
-	$scope.timerListUrl = '/u/random';
-	$scope.message = {'text': ''};
-	
-	activePage.set('about');
-}]);
-
-timerApp.controller('appDataController', ['$scope', function($scope) {
-	$scope.init = function(appData) {
-		if (appData && appData.siteName) {
-			$scope.siteName = appData.siteName;
-		}
+		activePage.set('');
 		
-		if (appData && appData.screen_name) {
-			$scope.appUser = {};
-			$scope.appUser.screen_name = appData.screen_name;
+		if ($scope.appUser && $scope.appUser.screen_name && $routeParams.screen_name == $scope.appUser.screen_name) {
+			$scope.headerTextFriends = 'Таймеры друзей';
+			$scope.timerListFriendsUrl = '/f/' + $routeParams.screen_name;
+			$scope.friendsMessage = {'text': ''};
+			
+			activePage.set('user');
 		}
-	}
-}]);
-
-timerApp.controller('collapsibleMenuController', ['$scope', function($scope) {
-	$scope.isCollapsed = true;
-}]);
+	}])
+	.controller('relationshipPageController', ['$scope', '$routeParams', 'activePage', function($scope, $routeParams, activePage) {
+		$scope.headerText = 'Взаимоотношения @' + $routeParams.screen_name;
+		$scope.relationshipListUrl = '/r/' + $routeParams.screen_name;
+		$scope.message = {'text': 'Данные не загружены. Попробуйте позже. Имеет смысл перезайти на сайт.'};
+		
+		activePage.set('');
+		
+		if ($scope.appUser && $scope.appUser.screen_name && $routeParams.screen_name == $scope.appUser.screen_name) {
+			activePage.set('relationships');
+		}
+	}])
+	.controller('aboutPageController', ['$scope', 'activePage', function($scope, activePage) {
+		$scope.timerListUrl = '/u/random';
+		$scope.message = {'text': ''};
+		
+		activePage.set('about');
+	}])
+	.controller('appDataController', ['$scope', function($scope) {
+		$scope.init = function(appData) {
+			if (appData && appData.siteName) {
+				$scope.siteName = appData.siteName;
+			}
+			
+			if (appData && appData.screen_name) {
+				$scope.appUser = {};
+				$scope.appUser.screen_name = appData.screen_name;
+			}
+		}
+	}])
+	.controller('collapsibleMenuController', ['$scope', function($scope) {
+		$scope.isCollapsed = true;
+	}]);
 
 
 /***
@@ -196,71 +188,71 @@ timerApp.controller('collapsibleMenuController', ['$scope', function($scope) {
  *    \____/_|___/\__|
  *                    
  */
-timerApp.factory('timerListFactory', ['$http', function($http) {
-	return {
-		getTimerListAsync: function(url, callback) {
-			$http.get(url + '/timers').success(callback);
-		}
-	};
-}]);
-
-timerApp.controller('timerListController', ['$scope', 'timerFactory', 'timerListFactory', function($scope, timerFactory, timerListFactory) {
-	$scope.loading = true;
-	
-	var createRange = function(target) {
-		return function () {
-			var range = [];
-			for (var i = 0; i < target.length; i = i + 3) range.push(i);
-			return range;
-		}
-	}
-	
-	$scope.concat = function() {
-		return Array.prototype.slice.call(arguments).join('');
-	}
-	
-	timerListFactory.getTimerListAsync($scope.timerListUrl, function(results) {
-		$scope.loading = false;
+timerApp
+	.factory('timerListFactory', ['$http', function($http) {
+		return {
+			getTimerListAsync: function(url, callback) {
+				$http.get(url + '/timers').success(callback);
+			}
+		};
+	}])
+	.controller('timerListController', ['$scope', 'timerFactory', 'timerListFactory', function($scope, timerFactory, timerListFactory) {
+		$scope.loading = true;
 		
-		if (results.length === 0) {
-			$scope.timers = [];
-		} else {
-			$scope.timers = results;
-			
+		var createRange = function(target) {
+			return function () {
+				var range = [];
+				for (var i = 0; i < target.length; i = i + 3) range.push(i);
+				return range;
+			}
 		}
-		$scope.timers.range = createRange($scope.timers);
-	});
-	
-	$scope.timerListAppend = function(id, callback) {
-		timerFactory.getTimerAsync(id, function(timer) {
-			$scope.timers.push(timer);
+		
+		$scope.concat = function() {
+			return Array.prototype.slice.call(arguments).join('');
+		}
+		
+		timerListFactory.getTimerListAsync($scope.timerListUrl, function(results) {
+			$scope.loading = false;
+			
+			if (results.length === 0) {
+				$scope.timers = [];
+			} else {
+				$scope.timers = results;
+				
+			}
 			$scope.timers.range = createRange($scope.timers);
-			console.log('adding to timers: ' + JSON.stringify(timer));
-			callback(timer);
-		})
-	};
-	
-	$scope.removeTimerById = function(id) {
-		console.log('searching timer ' + id);
-		$scope.timers.forEach(function(e, i) {
-			if (e.id === id) {
-				console.log('removed timer with id ' + id);
-				$scope.timers.splice(i, 1);
+		});
+		
+		$scope.timerListAppend = function(id, callback) {
+			timerFactory.getTimerAsync(id, function(timer) {
+				$scope.timers.push(timer);
 				$scope.timers.range = createRange($scope.timers);
-			}
-		});
-	};
-	
-	$scope.replaceTimer = function(id, timer) {
-		console.log('searching timer ' + id);
-		$scope.timers.forEach(function(e, i) {
-			if (e.id === id) {
-				console.log('replaced timer with id ' + timer.id);
-				$scope.timers[i] = timer;
-			}
-		});
-	};
-}]);
+				console.log('adding to timers: ' + JSON.stringify(timer));
+				callback(timer);
+			})
+		};
+		
+		$scope.removeTimerById = function(id) {
+			console.log('searching timer ' + id);
+			$scope.timers.forEach(function(e, i) {
+				if (e.id === id) {
+					console.log('removed timer with id ' + id);
+					$scope.timers.splice(i, 1);
+					$scope.timers.range = createRange($scope.timers);
+				}
+			});
+		};
+		
+		$scope.replaceTimer = function(id, timer) {
+			console.log('searching timer ' + id);
+			$scope.timers.forEach(function(e, i) {
+				if (e.id === id) {
+					console.log('replaced timer with id ' + timer.id);
+					$scope.timers[i] = timer;
+				}
+			});
+		};
+	}]);
 
 /***
  *     _____ _                     
@@ -270,125 +262,125 @@ timerApp.controller('timerListController', ['$scope', 'timerFactory', 'timerList
  *     \/   |_|_| |_| |_|\___|_|   
  *                                 
  */
-timerApp.factory('timerFactory', ['$http', '$location', function($http, $location) {
-	return {
-		getTimerAsync: function(id, callback) {
-			$http.get('/t/' + id + '/show').success(callback);
-		},
-		restartTimerAsync: function(id, callback) {
-			$http.get('/t/' + id + '/restart').success(callback);
-		},
-		setTimerAsync: function(obj, callback) {
-			$http({
-				url:'/t/' + obj.id + '/set',
-				method: 'GET',
-				params: obj,
-			}).success(callback);
-		},
-		removeTimerAsync: function(id, callback) {
-			$http.get('/t/' + id + '/remove').success(callback);
-		},
-	};
-}]);
-
-timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', 'focusFactory', function($scope, $location, timerFactory, focusFactory) {
-	$scope.specifyTime = false;
-	$scope.iSpecifyTime = function() {
-		$scope.specifyTime = !$scope.specifyTime;
+timerApp
+	.factory('timerFactory', ['$http', '$location', function($http, $location) {
+		return {
+			getTimerAsync: function(id, callback) {
+				$http.get('/t/' + id + '/show').success(callback);
+			},
+			restartTimerAsync: function(id, callback) {
+				$http.get('/t/' + id + '/restart').success(callback);
+			},
+			setTimerAsync: function(obj, callback) {
+				$http({
+					url:'/t/' + obj.id + '/set',
+					method: 'GET',
+					params: obj,
+				}).success(callback);
+			},
+			removeTimerAsync: function(id, callback) {
+				$http.get('/t/' + id + '/remove').success(callback);
+			},
+		};
+	}])
+	.controller('timerController', ['$scope', '$location', 'timerFactory', 'focusFactory', function($scope, $location, timerFactory, focusFactory) {
+		$scope.specifyTime = false;
+		$scope.iSpecifyTime = function() {
+			$scope.specifyTime = !$scope.specifyTime;
+			
+			$scope.$watch('editableTimer.last_restart_date', function(newValue, oldValue, scope) {
+				if (newValue instanceof Date) {
+					scope.editableTimer.last_restart = Math.round(newValue.getTime() / 1000);
+				}
+			});
+			
+			focusFactory('specifyTime');
+		}
 		
-		$scope.$watch('editableTimer.last_restart_date', function(newValue, oldValue, scope) {
-			if (newValue instanceof Date) {
-				scope.editableTimer.last_restart = Math.round(newValue.getTime() / 1000);
-			}
-		});
+		$scope.show = function(id) {
+			$scope.loading = true;
+			timerFactory.getTimerAsync(id, function(results) {
+				$scope.loading = false;
+				$scope.timer = results;
+				$scope.editableTimer = $scope.timer;
+				$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+				$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
+			});
+		};
 		
-		focusFactory('specifyTime');
-	}
-	
-	$scope.show = function(id) {
-		$scope.loading = true;
-		timerFactory.getTimerAsync(id, function(results) {
-			$scope.loading = false;
-			$scope.timer = results;
+		if ($scope.timerLoad != 'undefined' && !isNaN(parseInt($scope.timerLoad))) {
+			$scope.show(parseInt($scope.timerLoad));
+		}
+		
+		$scope.edit = function() {
+			$scope.editor = true;
 			$scope.editableTimer = $scope.timer;
 			$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
 			$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
-		});
-	};
-	
-	if ($scope.timerLoad != 'undefined' && !isNaN(parseInt($scope.timerLoad))) {
-		$scope.show(parseInt($scope.timerLoad));
-	}
-	
-	$scope.edit = function() {
-		$scope.editor = true;
-		$scope.editableTimer = $scope.timer;
-		$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
-		$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
-		$scope.changeNameLength();
-	};
-	
-	$scope.changeNameLength = function() {
-		$scope.nameLengthLeft = 'undefined' !== typeof $scope.editableTimer.name ? $scope.nameLengthLeft = 120 - $scope.editableTimer.name.length : $scope.nameLengthLeft = '!!';
-	}
-	
-	$scope.save = function() {
-		if ($scope.editableTimer && 'undefined' !== typeof $scope.editableTimer.id) {
-			$scope.loading = true;
-			timerFactory.setTimerAsync($scope.editableTimer, function(results) {
-				$scope.loading = false;
-				$scope.timer = results;
-				$scope.$parent.replaceTimer($scope.editableTimer.id, results);
-				$scope.editor = false;
-				if ($scope.editableTimer.id == -1) {
-					console.log('trying to append new timer -1');
-					$scope.$parent.timerListAppend(-1, function() {});
-				}
-				$scope.editableTimer = $scope.timer;
-				$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
-				$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
-			});
+			$scope.changeNameLength();
+		};
+		
+		$scope.changeNameLength = function() {
+			$scope.nameLengthLeft = 'undefined' !== typeof $scope.editableTimer.name ? $scope.nameLengthLeft = 120 - $scope.editableTimer.name.length : $scope.nameLengthLeft = '!!';
 		}
-	};
-	
-	$scope.cancel = function() {
-		$scope.editor = false;
-		$scope.editableTimer = $scope.timer;
-		$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
-		$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
-	};
-	
-	$scope.restart = function() {
-		if ($scope.timer && 'undefined' !== typeof $scope.timer.id) {
-			$scope.loading = true;
-			timerFactory.restartTimerAsync($scope.timer.id, function(results) {
-				$scope.loading = false;
-				$scope.timer = results;
-				$scope.editableTimer = $scope.timer;
-				$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
-				$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
-			});
+		
+		$scope.save = function() {
+			if ($scope.editableTimer && 'undefined' !== typeof $scope.editableTimer.id) {
+				$scope.loading = true;
+				timerFactory.setTimerAsync($scope.editableTimer, function(results) {
+					$scope.loading = false;
+					$scope.timer = results;
+					$scope.$parent.replaceTimer($scope.editableTimer.id, results);
+					$scope.editor = false;
+					if ($scope.editableTimer.id == -1) {
+						console.log('trying to append new timer -1');
+						$scope.$parent.timerListAppend(-1, function() {});
+					}
+					$scope.editableTimer = $scope.timer;
+					$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+					$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
+				});
+			}
+		};
+		
+		$scope.cancel = function() {
+			$scope.editor = false;
+			$scope.editableTimer = $scope.timer;
+			$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+			$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
+		};
+		
+		$scope.restart = function() {
+			if ($scope.timer && 'undefined' !== typeof $scope.timer.id) {
+				$scope.loading = true;
+				timerFactory.restartTimerAsync($scope.timer.id, function(results) {
+					$scope.loading = false;
+					$scope.timer = results;
+					$scope.editableTimer = $scope.timer;
+					$scope.editableTimer.good = $scope.editableTimer.good ? true : false;
+					$scope.editableTimer.public = $scope.editableTimer.public ? true : false;
+				});
+			}
+		};
+		
+		$scope.remove = function() {
+			if ($scope.timer && 'undefined' !== typeof $scope.timer.id) {
+				$scope.loading = true;
+				timerFactory.removeTimerAsync($scope.timer.id, function(results) {
+					$scope.loading = false;
+					console.log('removing ' + results.ok);
+					if (results && results.ok) {
+						console.log('trying to remove timer ' + $scope.timer.id);
+						$scope.$parent.removeTimerById($scope.timer.id);
+					}
+				});
+			}
+		};
+		
+		$scope.getUrl = function () {
+			return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
 		}
-	};
-	
-	$scope.remove = function() {
-		if ($scope.timer && 'undefined' !== typeof $scope.timer.id) {
-			$scope.loading = true;
-			timerFactory.removeTimerAsync($scope.timer.id, function(results) {
-				$scope.loading = false;
-				console.log('removing ' + results.ok);
-				if (results && results.ok) {
-					console.log('trying to remove timer ' + $scope.timer.id);
-					$scope.$parent.removeTimerById($scope.timer.id);
-				}
-			});
-		}
-	};
-	
-	$scope.getUrl = function () {
-		return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
-	}
-}]);
+	}]);
 
 /***
  *     _____ _                    _____ _                
@@ -398,144 +390,144 @@ timerApp.controller('timerController', ['$scope', '$location', 'timerFactory', '
  *     \/   |_|_| |_| |_|\___|_|  \/   |_|_| |_| |_|\___|
  *                                                       
  */
-timerApp.factory('timerTimeFactory', ['$http', function($http) {
-	return {
-		timerGetTime: function(last_restart, format, debug) {
-			debug = debug || 0;
-			format = format || 0;
-			var date_1 = new Date();
-			var date_2 = new Date(last_restart * 1000);
-			var time = Array(4);
-			if ( date_1.getTime() > date_2.getTime() ) { // last_restart is in future
-			  date_1 = date_2;
-			  date_2 = new Date();
-			}
-			if (format == 0) {
-			  var date_diff = Array(6);
-			  date_diff[0] = Date.DateDiff('yyyy',date_1,date_2,1);
-			  date_diff[1] = Date.DateDiff('m',date_1,date_2,1);
-			  date_diff[2] = Date.DateDiff('d',date_1,date_2,1);
-			  date_diff[3] = Date.DateDiff('h',date_1,date_2,1);
-			  date_diff[4] = Date.DateDiff('n',date_1,date_2,1);
-			  date_diff[5] = Date.DateDiff('s',date_1,date_2,1);
-			  if (debug == 1) {
-				console.log('debugging timerGetTime: '+last_restart+' yyyy'+date_diff[0]+' m'+date_diff[1]+' d'+date_diff[2]+' h'+date_diff[3]+' n'+date_diff[4]+' s'+date_diff[5]);
-			  }
-			  if (date_diff[0] != 0) { // diff is MORE than year
-				if (debug == 1) { console.log('diff is MORE than year'); }
-				time[0] = date_diff[0];
-				time[1] = 'г.';
-				time[2] = Date.DateDiff('m',Date.DateAdd('yyyy',time[0],date_1),date_2,1);
-				time[3] = 'мес.';
-				if (time[2] < 0) {
-				  time[0] = date_diff[0] - 1;
-				  time[2] = Date.DateDiff('m',Date.DateAdd('yyyy',time[0],date_1),date_2,1);
-				  if (time[0] == 0) {
-				time[0] = time[2];
-				time[1] = time[3];
-				time[2] = Date.DateDiff('d',Date.DateAdd('m',time[0],date_1),date_2,1);
-				time[3] = 'д.';
-				if (time[2] < 0) {
-				  time[0] = date_diff[1] - 1;
-				  time[2] = Date.DateDiff('d',Date.DateAdd('m',time[0],date_1),date_2,1);
+timerApp
+	.factory('timerTimeFactory', ['$http', function($http) {
+		return {
+			timerGetTime: function(last_restart, format, debug) {
+				debug = debug || 0;
+				format = format || 0;
+				var date_1 = new Date();
+				var date_2 = new Date(last_restart * 1000);
+				var time = Array(4);
+				if ( date_1.getTime() > date_2.getTime() ) { // last_restart is in future
+				  date_1 = date_2;
+				  date_2 = new Date();
 				}
-				// if a few days over the year -->
-				if (time[0] == 0) {
-				  time[0] = time[2];
-				  time[1] = time[3];
-				  time[2] = Date.DateDiff('h',Date.DateAdd('d',time[0],date_1),date_2,1);
-				  time[3] = 'ч';
-				  if (time[2] < 0) {
+				if (format == 0) {
+				  var date_diff = Array(6);
+				  date_diff[0] = Date.DateDiff('yyyy',date_1,date_2,1);
+				  date_diff[1] = Date.DateDiff('m',date_1,date_2,1);
+				  date_diff[2] = Date.DateDiff('d',date_1,date_2,1);
+				  date_diff[3] = Date.DateDiff('h',date_1,date_2,1);
+				  date_diff[4] = Date.DateDiff('n',date_1,date_2,1);
+				  date_diff[5] = Date.DateDiff('s',date_1,date_2,1);
+				  if (debug == 1) {
+					console.log('debugging timerGetTime: '+last_restart+' yyyy'+date_diff[0]+' m'+date_diff[1]+' d'+date_diff[2]+' h'+date_diff[3]+' n'+date_diff[4]+' s'+date_diff[5]);
+				  }
+				  if (date_diff[0] != 0) { // diff is MORE than year
+					if (debug == 1) { console.log('diff is MORE than year'); }
+					time[0] = date_diff[0];
+					time[1] = 'г.';
+					time[2] = Date.DateDiff('m',Date.DateAdd('yyyy',time[0],date_1),date_2,1);
+					time[3] = 'мес.';
+					if (time[2] < 0) {
+					  time[0] = date_diff[0] - 1;
+					  time[2] = Date.DateDiff('m',Date.DateAdd('yyyy',time[0],date_1),date_2,1);
+					  if (time[0] == 0) {
+					time[0] = time[2];
+					time[1] = time[3];
+					time[2] = Date.DateDiff('d',Date.DateAdd('m',time[0],date_1),date_2,1);
+					time[3] = 'д.';
+					if (time[2] < 0) {
+					  time[0] = date_diff[1] - 1;
+					  time[2] = Date.DateDiff('d',Date.DateAdd('m',time[0],date_1),date_2,1);
+					}
+					// if a few days over the year -->
+					if (time[0] == 0) {
+					  time[0] = time[2];
+					  time[1] = time[3];
+					  time[2] = Date.DateDiff('h',Date.DateAdd('d',time[0],date_1),date_2,1);
+					  time[3] = 'ч';
+					  if (time[2] < 0) {
+						time[0] = date_diff[1] - 1;
+						time[2] = Date.DateDiff('h',Date.DateAdd('d',time[0],date_1),date_2,1);
+					  }
+					}
+					// <-- if a few days over the year. NEED NEW YEAR TESTING FOR HOURS AND MINUTES
+					  }
+					}
+				  } else { // diff is less than year
+					if (date_diff[1] != 0) { // diff is MORE than month
+					  if (debug == 1) { console.log('diff is MORE than month'); }
+					  time[0] = date_diff[1];
+					  time[1] = 'мес.';
+					  time[2] = Date.DateDiff('d',Date.DateAdd('m',time[0],date_1),date_2,1);
+					  time[3] = 'д.';
+					  if (time[2] < 0) {
 					time[0] = date_diff[1] - 1;
+					time[2] = Date.DateDiff('d',Date.DateAdd('m',time[0],date_1),date_2,1);
+					if (time[0] == 0) {
+					  time[0] = time[2];
+					  time[1] = time[3];
+					  time[2] = Date.DateDiff('h',Date.DateAdd('d',time[0],date_1),date_2,1);
+					  time[3] = 'ч';
+					}
+					  }
+					} else { // diff is less than month
+					  if (date_diff[2] != 0) { // diff is MORE than day
+					if (debug == 1) { console.log('diff is MORE than day'); }
+					time[0] = date_diff[2];
+					time[1] = 'д.';
 					time[2] = Date.DateDiff('h',Date.DateAdd('d',time[0],date_1),date_2,1);
+					time[3] = 'ч';
+					  } else { // diff is less than day
+					if (date_diff[3] != 0) { // diff is MORE than hour
+					  if (debug == 1) { console.log('diff is MORE than hour'); }
+					  time[0] = date_diff[3];
+					  time[1] = 'ч';
+					  time[2] = Date.DateDiff('n',Date.DateAdd('h',time[0],date_1),date_2,1);
+					  time[3] = 'мин';
+					} else { // diff is less than hour
+					  if (date_diff[4] != 0) { // diff is MORE than minute
+						if (debug == 1) { console.log('diff is MORE than minute'); }
+						time[0] = date_diff[4];
+						time[1] = 'мин';
+						time[2] = Date.DateDiff('s',Date.DateAdd('n',time[0],date_1),date_2,1);
+						time[3] = 'с';
+					  } else { // diff is less than minute
+						if (debug == 1) { console.log('diff is less than minute'); }
+						time[0] = date_diff[5];
+						time[1] = 'с';
+						time[2] = '';
+						time[3] = '';
+					  }
+					}
+					
+					  }
+					}
 				  }
 				}
-				// <-- if a few days over the year. NEED NEW YEAR TESTING FOR HOURS AND MINUTES
-				  }
+				if (time[2] == 0) {
+				  time[2] = '';
+				  time[3] = '';
 				}
-			  } else { // diff is less than year
-				if (date_diff[1] != 0) { // diff is MORE than month
-				  if (debug == 1) { console.log('diff is MORE than month'); }
-				  time[0] = date_diff[1];
-				  time[1] = 'мес.';
-				  time[2] = Date.DateDiff('d',Date.DateAdd('m',time[0],date_1),date_2,1);
-				  time[3] = 'д.';
-				  if (time[2] < 0) {
-				time[0] = date_diff[1] - 1;
-				time[2] = Date.DateDiff('d',Date.DateAdd('m',time[0],date_1),date_2,1);
-				if (time[0] == 0) {
-				  time[0] = time[2];
-				  time[1] = time[3];
-				  time[2] = Date.DateDiff('h',Date.DateAdd('d',time[0],date_1),date_2,1);
-				  time[3] = 'ч';
-				}
-				  }
-				} else { // diff is less than month
-				  if (date_diff[2] != 0) { // diff is MORE than day
-				if (debug == 1) { console.log('diff is MORE than day'); }
-				time[0] = date_diff[2];
-				time[1] = 'д.';
-				time[2] = Date.DateDiff('h',Date.DateAdd('d',time[0],date_1),date_2,1);
-				time[3] = 'ч';
-				  } else { // diff is less than day
-				if (date_diff[3] != 0) { // diff is MORE than hour
-				  if (debug == 1) { console.log('diff is MORE than hour'); }
-				  time[0] = date_diff[3];
-				  time[1] = 'ч';
-				  time[2] = Date.DateDiff('n',Date.DateAdd('h',time[0],date_1),date_2,1);
-				  time[3] = 'мин';
-				} else { // diff is less than hour
-				  if (date_diff[4] != 0) { // diff is MORE than minute
-					if (debug == 1) { console.log('diff is MORE than minute'); }
-					time[0] = date_diff[4];
-					time[1] = 'мин';
-					time[2] = Date.DateDiff('s',Date.DateAdd('n',time[0],date_1),date_2,1);
-					time[3] = 'с';
-				  } else { // diff is less than minute
-					if (debug == 1) { console.log('diff is less than minute'); }
-					time[0] = date_diff[5];
-					time[1] = 'с';
-					time[2] = '';
-					time[3] = '';
-				  }
-				}
-				
-				  }
-				}
-			  }
-			}
-			if (time[2] == 0) {
-			  time[2] = '';
-			  time[3] = '';
-			}
-			return time;
-		},
-	};
-}]);
-
-timerApp.controller('timerTimeController', ['$scope', '$timeout', 'timerTimeFactory', function($scope, $timeout, timerTimeFactory) {
-	var stop;
-	var time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
-	$scope.time = time;
-	
-	var modTime = function() {
-		time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
+				return time;
+			},
+		};
+	}])
+	.controller('timerTimeController', ['$scope', '$timeout', 'timerTimeFactory', function($scope, $timeout, timerTimeFactory) {
+		var stop;
+		var time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
+		$scope.time = time;
 		
-		if (time.compare($scope.time) === false) {
-			$scope.time = time;
+		var modTime = function() {
+			time = timerTimeFactory.timerGetTime($scope.lastRestart, 0, 0);
+			
+			if (time.compare($scope.time) === false) {
+				$scope.time = time;
+			}
 		}
-	}
-	
-	$scope.onTimeout = function() {
-		modTime();
+		
+		$scope.onTimeout = function() {
+			modTime();
+			stop = $timeout($scope.onTimeout, 1000);
+		}
 		stop = $timeout($scope.onTimeout, 1000);
-	}
-	stop = $timeout($scope.onTimeout, 1000);
-	
-	$scope.timeoutStop = function() {
-		$timeout.cancel(stop);
-	}
-}]);
+		
+		$scope.timeoutStop = function() {
+			$timeout.cancel(stop);
+		}
+	}]);
 
 /***
  *     _____           _ _   _             __ _       _    
@@ -545,20 +537,21 @@ timerApp.controller('timerTimeController', ['$scope', '$timeout', 'timerTimeFact
  *     \/      \_/\_/ |_|\__|\__\___|_| \____/_|_| |_|_|\_\
  *                                                         
  */
-timerApp.controller('timerTwitterLinkController', ['$scope', '$window', '$location', 'timerTimeFactory', function($scope, $window, $location, timerTimeFactory) {
-	$scope.getUrl = function () {
-		return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
-	}
-	
-	$scope.createLink = function () {
-		var time = timerTimeFactory.timerGetTime($scope.timer.last_restart, 0, 0);
-		var link = 'https://twitter.com/share?url=' + $scope.getUrl() + '&text=' +
-			($scope.timer.owner_name ? '@' + $scope.timer.owner_name + ': ' : '') +
-			$scope.timer.name + ' ' + time[0] + ' ' + time[1] + 
-			(time[3] != '' ? ' ' + time[2] + ' ' + time[3] : '');
-		return link;
-	};
-}]);
+timerApp
+	.controller('timerTwitterLinkController', ['$scope', '$window', '$location', 'timerTimeFactory', function($scope, $window, $location, timerTimeFactory) {
+		$scope.getUrl = function () {
+			return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
+		}
+		
+		$scope.createLink = function () {
+			var time = timerTimeFactory.timerGetTime($scope.timer.last_restart, 0, 0);
+			var link = 'https://twitter.com/share?url=' + $scope.getUrl() + '&text=' +
+				($scope.timer.owner_name ? '@' + $scope.timer.owner_name + ': ' : '') +
+				$scope.timer.name + ' ' + time[0] + ' ' + time[1] + 
+				(time[3] != '' ? ' ' + time[2] + ' ' + time[3] : '');
+			return link;
+		};
+	}]);
 
 /***
  *       __      _       _   _                 
@@ -568,32 +561,32 @@ timerApp.controller('timerTwitterLinkController', ['$scope', '$window', '$locati
  *    \/ \_/\___|_|\__,_|\__|_|\___/|_| |_|___/
  *                                             
  */
-timerApp.factory('relationshipListFactory', ['$http', function($http) {
-	return {
-		getRelationshipListAsync: function(url, callback) {
-			$http.get(url + '/list').success(callback);
-		}
-	};
-}]);
-
-timerApp.controller('relationshipListController', ['$scope', 'relationshipListFactory', function($scope, relationshipListFactory) {
-	$scope.loading = true;
-	
-	$scope.concat = function() {
-		return Array.prototype.slice.call(arguments).join('');
-	}
-	
-	relationshipListFactory.getRelationshipListAsync($scope.relationshipListUrl, function(results) {
-		$scope.loading = false;
+timerApp
+	.factory('relationshipListFactory', ['$http', function($http) {
+		return {
+			getRelationshipListAsync: function(url, callback) {
+				$http.get(url + '/list').success(callback);
+			}
+		};
+	}])
+	.controller('relationshipListController', ['$scope', 'relationshipListFactory', function($scope, relationshipListFactory) {
+		$scope.loading = true;
 		
-		if (!results || results.length === 0) {
-			$scope.relationships = [];
-		} else {
-			$scope.relationships = results;
-			
+		$scope.concat = function() {
+			return Array.prototype.slice.call(arguments).join('');
 		}
-	});
-}]);
+		
+		relationshipListFactory.getRelationshipListAsync($scope.relationshipListUrl, function(results) {
+			$scope.loading = false;
+			
+			if (!results || results.length === 0) {
+				$scope.relationships = [];
+			} else {
+				$scope.relationships = results;
+				
+			}
+		});
+	}]);
 
 /***
  *        ___ _               _   _                
