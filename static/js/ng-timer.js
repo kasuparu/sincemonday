@@ -586,6 +586,9 @@ timerApp
 				
 			}
 		});
+		
+		$scope.predicate = '';
+		$scope.reverse = false;
 	}]);
 
 /***
@@ -942,13 +945,13 @@ timerApp
 					'<div style="display:none;">loading:{{loading}}, relationships.length:{{relationships.length}}</div>' +
 					'<div ng-if="!loading && relationships" class="row-fluid"><div class="span12"><table class="table table-condensed">' +
 						'<thead>' +
-							'<th>Профиль</th>' +
-							'<th>Друзей</th>' +
-							'<th>Подписчиков</th>' +
-							'<th>Читаемый</th>' +
-							'<th>Читает вас</th>' +
+							'<th><a ng-click="predicate = \'screen_name\'; reverse=!reverse">Профиль</a></th>' +
+							'<th><a ng-click="predicate = \'friends_count\'; reverse=!reverse">Друзей</a></th>' +
+							'<th><a ng-click="predicate = \'followers_count\'; reverse=!reverse">Подписчиков</a></th>' +
+							'<th><a ng-click="predicate = \'following\'; reverse=!reverse">Читаете вы</a></th>' +
+							'<th><a ng-click="predicate = \'followed_by\'; reverse=!reverse">Читает вас</a></th>' +
 						'</thead>' +
-						'<tbody ng-repeat="item in relationships" relationship="item" class=""></tbody>' +
+						'<tbody ng-repeat="item in relationships | orderBy:predicate:reverse" relationship="item" class=""></tbody>' +
 					'</table></div></div>' +
 				'</div>',
 			replace: true
@@ -963,9 +966,9 @@ timerApp
 			},
 			template: '' +
 				'<tr id="{{elementId}}" ng-class="{' +
-					'\'success\': relationship.following && relationship.followed_by,' +
-					'\'error\': relationship.following && !relationship.followed_by,' +
-					'\'info\': !relationship.following && relationship.followed_by' +
+					'\'relationship-even\': relationship.following && relationship.followed_by,' +
+					'\'relationship-following\': relationship.following && !relationship.followed_by,' +
+					'\'relationship-followed-by\': !relationship.following && relationship.followed_by' +
 				'}">' +
 					'<td><a class="black-link" ng-href="https://twitter.com/{{relationship.screen_name}}" target="_blank"><img class="mr5" width="24" ng-if="relationship.profile_image_url_https" ng-src="{{relationship.profile_image_url_https}}" /><strong>{{relationship.screen_name}}</strong></a></td>' +
 					'<td><span>{{relationship.friends_count}}</span></td>' +

@@ -97,3 +97,19 @@ a.black-link, a.black-link:hover, a.black-link:visited {
 .mr5 {
 	margin-right: 5px;
 }
+
+.ml5 {
+	margin-left: 5px;
+}
+
+.relationship-even {
+	background-color: #A9CC90;
+}
+
+.relationship-following {
+	background-color: #CC9791;
+}
+
+.relationship-followed-by {
+	background-color: #91BECC;
+}

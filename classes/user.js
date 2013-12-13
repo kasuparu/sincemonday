@@ -318,7 +318,7 @@ User.prototype.updateTwitterFriendsAndFollowers = function(id, accessToken, acce
 								friends_count: user.friends_count,
 								followers_count: user.followers_count,
 								profile_image_url_https: user.profile_image_url_https,
-								
+								// TODO: member: IS_SINCEMONDAY_MEMBER
 							});
 						}
 					});
