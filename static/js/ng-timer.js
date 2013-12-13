@@ -152,9 +152,9 @@ timerApp.controller('userPageController', ['$scope', '$routeParams', 'activePage
 }]);
 
 timerApp.controller('relationshipPageController', ['$scope', '$routeParams', 'activePage', function($scope, $routeParams, activePage) {
-	$scope.headerText = 'Взаимноотношения @' + $routeParams.screen_name;
+	$scope.headerText = 'Взаимоотношения @' + $routeParams.screen_name;
 	$scope.relationshipListUrl = '/r/' + $routeParams.screen_name;
-	$scope.message = {'text': 'Данные пока что не загружены.'};
+	$scope.message = {'text': 'Данные не загружены. Попробуйте позже. Имеет смысл перезайти на сайт.'};
 	
 	activePage.set('');
 	
@@ -586,7 +586,7 @@ timerApp.controller('relationshipListController', ['$scope', 'relationshipListFa
 	relationshipListFactory.getRelationshipListAsync($scope.relationshipListUrl, function(results) {
 		$scope.loading = false;
 		
-		if (results.length === 0) {
+		if (!results || results.length === 0) {
 			$scope.relationships = [];
 		} else {
 			$scope.relationships = results;
@@ -717,7 +717,7 @@ timerApp
 			controller: 'timerListController',
 			template: '' +
 				'<div class="container-fluid counter-container" ng-class="{\'loading\': loading}">' +
-					'<div ng-if="message && !loading && !timers" list-message="message"></div>' +
+					'<div ng-if="message && !loading && (!timers || !timers.length)" list-message="message"></div>' +
 					'<div ng-repeat="n in timers.range()" class="row-fluid" id="concat(elementId, \'row\', $index)">' +
 						'<div ng-repeat="item in timers.slice(n, n+3)" timer="item" id="concat(\'counter\', item.id)" class="span4"></div>' +
 					'</div>' +
@@ -945,7 +945,8 @@ timerApp
 			controller: 'relationshipListController',
 			template: '' +
 				'<div class="container-fluid relationship-container" ng-class="{\'loading\': loading}">' +
-					'<div ng-if="message && !loading && !relationships" list-message="message"></div>' +
+					'<div ng-if="message && !loading && (!relationships || !relationships.length)" list-message="message"></div>' +
+					'<div style="display:none;">loading:{{loading}}, relationships.length:{{relationships.length}}</div>' +
 					'<div ng-if="!loading && relationships" class="row-fluid"><div class="span12"><table class="table table-condensed">' +
 						'<thead>' +
 							'<th>Профиль</th>' +
@@ -973,15 +974,24 @@ timerApp
 					'\'error\': relationship.following && !relationship.followed_by,' +
 					'\'info\': !relationship.following && relationship.followed_by' +
 				'}">' +
-					'<td class=""><a class="black-link" ng-href="https://twitter.com/{{relationship.screen_name}}"  target="_blank"><img class="mr5" width="24" ng-if="relationship.profile_image_url_https" ng-src="{{relationship.profile_image_url_https}}" /><strong>{{relationship.screen_name}}</strong></a></td>' +
-					'<td class=""><span>{{relationship.friends_count}}</span></td>' +
-					'<td class=""><span>{{relationship.followers_count}}</span></td>' +
-					'<td class=""><label>{{relationship.following}}</label></td>' +
-					'<td class="" ng-class="{' +
-						'\'success\': relationship.following && relationship.followed_by,' +
-						'\'error\': relationship.following && !relationship.followed_by,' +
-						'\'info\': !relationship.following && relationship.followed_by' +
-					'}"><span>{{relationship.followed_by}}</span></td>' +
+					'<td><a class="black-link" ng-href="https://twitter.com/{{relationship.screen_name}}" target="_blank"><img class="mr5" width="24" ng-if="relationship.profile_image_url_https" ng-src="{{relationship.profile_image_url_https}}" /><strong>{{relationship.screen_name}}</strong></a></td>' +
+					'<td><span>{{relationship.friends_count}}</span></td>' +
+					'<td><span>{{relationship.followers_count}}</span></td>' +
+					'<td><span yes-no-icon="relationship.following"></span></td>' +
+					'<td><span yes-no-icon="relationship.followed_by"></span></td>' +
 				'</tr>'
+		};
+	})
+	.directive('yesNoIcon', function() {
+		return {
+			restrict: 'A',
+			scope: {
+				value: '=yesNoIcon'
+			},
+			template: '' +
+				'<i ng-class="{' +
+					'\'icon-ok\': value,' +
+					'\'icon-remove\': !value' +
+				'}"></i>'
 		};
 	});

@@ -290,7 +290,7 @@ app.get('/u/random/:action(list|timers)', function(req, res) {
 	});
 });
 
-app.get('/u/:screen_name/:action(list|timers)', function(req, res) {
+app.get('/:handle(u|f)/:screen_name/:action(list|timers)', function(req, res) {
     res.setHeader('content-type', jsonContentType);
 	if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
 		userId = req.session.auth.twitter.user.id;
@@ -301,30 +301,9 @@ app.get('/u/:screen_name/:action(list|timers)', function(req, res) {
 	User.findByName(req.params.screen_name, function(owner) {
 		if (owner) {
 			var action = req.params.action == 'list' ? 'timerList' : 'timers';
-			User[action](owner, userId, function(err, timerList) {
-				if (!err && timerList) {
-					res.send(timerList);
-				} else {
-					res.send([]);
-				}
-			});
-		} else {
-			res.send([]);
-		}
-	});
-});
-
-app.get('/f/:screen_name/:action(list|timers)', function(req, res) {
-    res.setHeader('content-type', jsonContentType);
-	if(req.session.auth && req.session.auth.twitter && req.session.auth.twitter.user) {
-		userId = req.session.auth.twitter.user.id;
-	} else {
-		userId = -1;
-	}
-	
-	User.findByName(req.params.screen_name, function(owner) {
-		if (owner) {
-			var action = req.params.action == 'list' ? 'timerListFriends' : 'timersFriends';
+			if (req.params.handle == 'f') {
+				action += 'Friends';
+			}
 			User[action](owner, userId, function(err, timerList) {
 				if (!err && timerList) {
 					res.send(timerList);
@@ -350,7 +329,7 @@ app.get('/r/:screen_name/list', function(req, res) {
 		if (owner && owner.id && userId == owner.id) {
 			User.checkUpdateTwitterFriendsAndFollowers(owner, function(err, user) {
 				if (!err && user) {
-					res.send(user.relationships);
+					res.send(user.relationships || []);
 				} else {
 					res.send([]);
 				}
