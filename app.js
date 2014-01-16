@@ -124,6 +124,12 @@ app.get('/me', function(req, res) {
 	res.redirect(userName ? '/#!/u/' + userName : '/');
 });
 
+app.get('/embed-test', function(req, res) {
+	res.render('embed-test', {
+		siteName: cfg.siteName
+	});
+});
+
 // API
 app.get('/t/:id(-?\\d+)/show', function(req, res) {
     res.setHeader('content-type', jsonContentType);
