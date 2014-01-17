@@ -327,8 +327,6 @@ SinceMondayTimerJquery.createCSSSelector = function(selector, style) {
     }
 }
 
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-well', 'background-color: #F5F5F5; border: 1px solid #E3E3E3; border-radius: 2px; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset; margin-bottom: 20px; min-height: 20px; padding: 19px;');
-
 SinceMondayTimerJquery.createCSSSelector('h1 small.sincemonday-small', 'font-weight: normal; line-height: 1; color: #999999;');
 
 SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-thumbs-up', 'background-position: -96px -144px;');
@@ -398,4 +396,6 @@ SinceMondayTimerJquery.createCSSSelector('div.sincemonday-timer > div.sincemonda
 SinceMondayTimerJquery.createCSSSelector('.sincemonday-loading', 'background-image: url("http://sincemonday.net/loading.gif"); background-repeat: no-repeat; background-position: center center;');
 
 SinceMondayTimerJquery.createCSSSelector('.sincemonday-a', 'color: #4d90fe; text-decoration: none;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-well', 'background-color: #F5F5F5; border: 1px solid #E3E3E3; border-radius: 2px; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset; margin-bottom: 20px; min-height: 20px; padding: 19px;');
 
