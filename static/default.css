@@ -26,18 +26,12 @@ div.smallspace {
 }
 
 .timer-good { /* Green */
-    /*-moz-box-shadow: 0 0 10px rgba(128,255,128,0.5);
-    -webkit-box-shadow: 0 0 10px rgba(128,255,128,0.5);
-    box-shadow: 0 0 10px rgba(128,255,128,0.5);*/
     -moz-box-shadow: 0 0 10px rgba(45,159,12,0.7);
     -webkit-box-shadow: 0 0 10px rgba(45,159,12,0.7);
     box-shadow: 0 0 10px rgba(45,159,12,0.7);
 }
 
 .timer-bad { /* Red */
-    /*-moz-box-shadow: 0 0 10px rgba(255,128,128,0.5);
-    -webkit-box-shadow: 0 0 10px rgba(255,128,128,0.5);
-    box-shadow: 0 0 10px rgba(255,128,128,0.5);*/
     -moz-box-shadow: 0 0 10px rgba(246,62,12,0.7);
     -webkit-box-shadow: 0 0 10px rgba(246,62,12,0.7);
     box-shadow: 0 0 10px rgba(246,62,12,0.7);
