@@ -83,6 +83,10 @@ sessionTestingMiddleware = function(req, res, next) {
 // App
 app.configure(function(){
 	app	.use(express.logger())
+		.use(function(req, res, next) {
+			res.setHeader("Access-Control-Allow-Origin", "*");
+			return next();
+		})
 		.use(express.favicon(__dirname + '/static/favicon.ico'))
 		.use(express.static(__dirname + '/static'))
 		.use(express.bodyParser())
