@@ -2,6 +2,8 @@ var SinceMondayTimerJquery = function(opts) {
 	
 }
 
+SinceMondayTimerJquery.url = 'http://local.sincemonday.net:3000';
+
 SinceMondayTimerJquery.getElementByClass = function(className, parent) {
   parent || (parent = document);
   var descendants= parent.getElementsByTagName('*'), i=-1, e, result=[];
@@ -11,9 +13,8 @@ SinceMondayTimerJquery.getElementByClass = function(className, parent) {
   return result;
 }
 
-SinceMondayTimerJquery.loadTimer = function(id, callback) {
+SinceMondayTimerJquery.loadTimerXMLHTTP = function(id, callback) {
     var xmlhttp;
-
     if (window.XMLHttpRequest) {
         // code for IE7+, Firefox, Chrome, Opera, Safari
         xmlhttp = new XMLHttpRequest();
@@ -21,7 +22,6 @@ SinceMondayTimerJquery.loadTimer = function(id, callback) {
         // code for IE6, IE5
         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
     }
-
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             if (callback) {
@@ -29,117 +29,138 @@ SinceMondayTimerJquery.loadTimer = function(id, callback) {
             }
         }
     }
-
-    xmlhttp.open('GET', 'http://local.sincemonday.net:3000/t/' + id + '/show', true);
+    xmlhttp.open('GET', SinceMondayTimerJquery.url + '/t/' + id + '/show', true);
     xmlhttp.send();
 }
 
-String.prototype.escapeRegExp = function() {
-    var specialChars = [ '$', '^', '*', '(', ')', '+', '[', ']', '{', '}', '\\', '|', '.', '?', '/', '-' ];
-    var regex = new RegExp('(\\' + specialChars.join('|\\') + ')', 'g');
-    return this.replace(regex, '\\$1');
+SinceMondayTimerJquery.restartTimerXMLHTTP = function(id, callback) {
+    var xmlhttp;
+    if (window.XMLHttpRequest) {
+        // code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp = new XMLHttpRequest();
+    } else {
+        // code for IE6, IE5
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            if (callback) {
+				callback(JSON.parse(xmlhttp.responseText));
+            }
+        }
+    }
+    xmlhttp.open('GET', SinceMondayTimerJquery.url + '/t/' + id + '/restart', true);
+    xmlhttp.send();
 }
 
 SinceMondayTimerJquery.removeClass = function(element, className) {
-    console.log(element.className.replace(new RegExp(('\b' + className + '\b').escapeRegExp()), ''));
-    element.className = element.className.replace(new RegExp('\b' + className + '\b'), '');
+    return element.className = String.prototype.split.call(element.className, ' ').reduce(function(p, v) {
+		if (v && v != className) p.push(v);
+		return p;
+	}, []).join(' ');
 }
 
-SinceMondayTimerJquery.url = 'sincemonday.net';
+SinceMondayTimerJquery.addClass = function(element, className) {
+	return element.className = String.prototype.split.call(element.className, ' ').reduce(function(p, v) {
+		if (v) p.push(v);
+		return p;
+	}, [className]).join(' ');
+}
 
 SinceMondayTimerJquery.timerShow = function(id, element_id, element) {
-	//$(element_id).addClass("sincemonday-loading sincemonday-well");
-	element.className = element.className + ' sincemonday-loading sincemonday-well';
-	SinceMondayTimerJquery.loadTimer(id, function(data) {
-		//$(element_id).removeClass("sincemonday-loading");
-		SinceMondayTimerJquery.removeClass(element, 'sincemonday-loading')
-		if (data.set == 1) {
-			data.denied = data.denied || 0;
-			if (data.denied == 0) {
-				var debug = 0;
-				var items = '';
-				var element_id_time = element_id.replace('#','')+'time';
-				var restart_link = element_id.replace('#','')+'restart';
-				var edit_link = element_id.replace('#','')+'edit';
-				var twitter_link = element_id.replace('#','')+'twitter';
-				console.log('element classes: ' + document.getElementById(element_id).className);
-				if (data.good == 1) {
-					//$(element_id).removeClass("sincemonday-timer-good sincemonday-timer-bad sincemonday-timer-neutral").addClass("sincemonday-timer-good");
-					element.className = element.className + ' sincemonday-timer-good';
-					items+='<div class="sincemonday-icon-good"><i class="sincemonday-icon-thumbs-up"></i></div>';
-				} else if (data.good == 0) {
-					//$(element_id).removeClass("sincemonday-timer-good sincemonday-timer-bad sincemonday-timer-neutral").addClass("sincemonday-timer-bad");
-					element.className = element.className + ' sincemonday-timer-bad';
-					items+='<div class="sincemonday-icon-good"><i class="sincemonday-icon-thumbs-down"></i></div>';
-				} else {
-					//$(element_id).removeClass("sincemonday-timer-good sincemonday-timer-bad sincemonday-timer-neutral").addClass("sincemonday-timer-neutral");
-					element.className = element.className + ' sincemonday-timer-neutral';
-					items+='<div class="sincemonday-icon-good"><i class="sincemonday-icon-adjust"></i></div>';
-				}
-				if (data.public == 1) {
-					//$(element_id).removeClass("sincemonday-timer-public sincemonday-timer-private").addClass("sincemonday-timer-public");
-					element.className = element.className + ' sincemonday-timer-public';
-					items+='<div class="sincemonday-icon-public"><i class="sincemonday-icon-eye-open"></i></div>';
-				} else if (data.public == 0) {
-					//$(element_id).removeClass("sincemonday-timer-public sincemonday-timer-private").addClass("sincemonday-timer-private");
-					element.className = element.className + ' sincemonday-timer-private';
-					items+='<div class="sincemonday-icon-public"><i class="sincemonday-icon-eye-close"></i></div>';
-				}
-				if (data.owner_name) {
-					items+='<div class="sincemonday-icon-name"><a class="sincemonday-a" href="http://'+SinceMondayTimerJquery.url+'/#!/u/'+data.owner_name+'">'+data.owner_name+'</a></div>';
-				}
-				items+='<div class=""><center>';
-				items+=data.name;
-				items+='</center></div>';
-				items+='<div class="" id="'+element_id_time+'"><center>';
-				items+='</center></div>';
-				items+='<div class=""><center>';
-				if (data.can_edit == 1 || data.id == 0 || data.id == 74) {
-					items+='<a class="sincemonday-a sincemonday-btn sincemonday-btn-danger" href="#" id="'+restart_link+'"><i class="sincemonday-icon-white sincemonday-icon-repeat"></i> Сброс</a>';
-				}
-				if (data.public == 1) {
-					if (data.owner_name != null) {
-					var url='http://'+SinceMondayTimerJquery.url+'/#!/u/'+data.owner_name;
-					} else {
-					var url='http://'+SinceMondayTimerJquery.url;
-					}
-					items+=' <a href="" class="sincemonday-a sincemonday-twitter-share-button sincemonday-btn sincemonday-btn-inverse" target="_blank" id="'+twitter_link+'"><img src="https://twitter.com/favicons/favicon.ico"> Твитнуть</a>';
-				}
-				items+='</center></div>';
-				//$(element_id).html(items);
-				element.innerHTML = items;
-				//if (data.id == 14) { debug = 1; }
-				SinceMondayTimerJquery.timerShowTime(data.last_restart,'#'+element_id_time,0,debug);
-				SinceMondayTimerJquery.timerTwitterButtonHref('#'+twitter_link,url,data.owner_name,data.name,data.last_restart);
-				var stop_timer = setInterval(
-					function() {
-					SinceMondayTimerJquery.timerShowTime(data.last_restart,'#'+element_id_time);
-					SinceMondayTimerJquery.timerTwitterButtonHref('#'+twitter_link,url,data.owner_name,data.name,data.last_restart);
-					},1000
-				);
-				if (data.can_edit == 1 || data.id == 0) {
-					$('#'+restart_link).click(function() {
-						SinceMondayTimerJquery.timerRestart(data.id,'#'+element_id.replace('#',''),stop_timer);
-						return false;
-					});
-				}
-			} else {
-				var items = '';
-				items+='<div class=""><center>';
-				items+='Доступ к таймеру запрещён';
-				items+='</center></div>';
-				//$(element_id).html(items);
-				element.innerHTML = items;
-			}
-		}
+	SinceMondayTimerJquery.addClass(element, 'sincemonday-loading sincemonday-well');
+	SinceMondayTimerJquery.loadTimerXMLHTTP(id, function(data) {
+		SinceMondayTimerJquery.showTimerFromData(element, data);
 	});
 }
 
-SinceMondayTimerJquery.timerShowTime = function(last_restart,element_id_time, nonformat, debug) {
+SinceMondayTimerJquery.showTimerFromData =  function(element, data) {
+	SinceMondayTimerJquery.removeClass(element, 'sincemonday-loading');
+	if (data.set == 1) {
+		data.denied = data.denied || 0;
+		if (data.denied == 0) {
+			var debug = 0;
+			var items = '';
+			var element_id_time = element_id.replace('#','')+'time';
+			var restart_link = element_id.replace('#','')+'restart';
+			var edit_link = element_id.replace('#','')+'edit';
+			var twitter_link = element_id.replace('#','')+'twitter';
+			SinceMondayTimerJquery.removeClass(element, 'sincemonday-timer-good');
+			SinceMondayTimerJquery.removeClass(element, 'sincemonday-timer-bad');
+			SinceMondayTimerJquery.removeClass(element, 'sincemonday-timer-neutral');
+			SinceMondayTimerJquery.removeClass(element, 'sincemonday-timer-public');
+			SinceMondayTimerJquery.removeClass(element, 'sincemonday-timer-private');
+			if (data.good == 1) {
+				SinceMondayTimerJquery.addClass(element, 'sincemonday-timer-good');
+				items+='<div class="sincemonday-icon-good"><i class="sincemonday-icon-thumbs-up"></i></div>';
+			} else if (data.good == 0) {
+				SinceMondayTimerJquery.addClass(element, 'sincemonday-timer-bad');
+				items+='<div class="sincemonday-icon-good"><i class="sincemonday-icon-thumbs-down"></i></div>';
+			} else {
+				SinceMondayTimerJquery.addClass(element, 'sincemonday-timer-neutral');
+				items+='<div class="sincemonday-icon-good"><i class="sincemonday-icon-adjust"></i></div>';
+			}
+			if (data.public == 1) {
+				SinceMondayTimerJquery.addClass(element, 'sincemonday-timer-public');
+				items+='<div class="sincemonday-icon-public"><i class="sincemonday-icon-eye-open"></i></div>';
+			} else if (data.public == 0) {
+				SinceMondayTimerJquery.addClass(element, 'sincemonday-timer-private');
+				items+='<div class="sincemonday-icon-public"><i class="sincemonday-icon-eye-close"></i></div>';
+			}
+			if (data.owner_name) {
+				items+='<div class="sincemonday-icon-name"><a class="sincemonday-a" href="http://'+SinceMondayTimerJquery.url+'/#!/u/'+data.owner_name+'">'+data.owner_name+'</a></div>';
+			}
+			items+='<div class=""><center>';
+			items+=data.name;
+			items+='</center></div>';
+			items+='<div class="" id="'+element_id_time+'" title="' + (new Date(data.last_restart * 1000).toString())+ '"><center>';
+			items+='</center></div>';
+			items+='<div class=""><center>';
+			if (data.can_edit == 1 || data.id == 0 || data.id == 74) {
+				items+='<a class="sincemonday-a sincemonday-btn sincemonday-btn-danger" href="#" id="'+restart_link+'"><i class="sincemonday-icon-white sincemonday-icon-repeat"></i> Сброс</a>';
+			}
+			if (data.public == 1) {
+				if (data.owner_name != null) {
+				var url=SinceMondayTimerJquery.url+'/#!/u/'+data.owner_name;
+				} else {
+				var url=SinceMondayTimerJquery.url;
+				}
+				items+=' <a href="" class="sincemonday-a sincemonday-twitter-share-button sincemonday-btn sincemonday-btn-inverse" target="_blank" id="'+twitter_link+'"><img src="https://twitter.com/favicons/favicon.ico"> Твитнуть</a>';
+			}
+			items+='</center></div>';
+			element.innerHTML = items;
+			setTimeout(function() {
+				SinceMondayTimerJquery.timerShowTime(data.last_restart, element_id_time, 0, debug);
+				SinceMondayTimerJquery.timerTwitterButtonHref(twitter_link, url, data.owner_name, data.name, data.last_restart);
+				var stop_timer = setInterval(
+					function() {
+					SinceMondayTimerJquery.timerShowTime(data.last_restart, element_id_time);
+					SinceMondayTimerJquery.timerTwitterButtonHref(twitter_link, url, data.owner_name, data.name, data.last_restart);
+					},1000
+				);
+				if (data.can_edit == 1 || data.id == 0) {
+					document.getElementById(restart_link).onclick = function() {
+						SinceMondayTimerJquery.timerRestart(data.id, element_id, stop_timer);
+						return false;
+					};
+				}
+			}, 1);
+			
+		} else {
+			var items = '';
+			items+='<div class=""><center>';
+			items+='Доступ к таймеру запрещён';
+			items+='</center></div>';
+			element.innerHTML = items;
+		}
+	}
+}
+
+SinceMondayTimerJquery.timerShowTime = function(last_restart, element_id_time, nonformat, debug) {
 	debug = debug || 0;
 	nonformat = nonformat || 0;
-	var time_string_was = $(element_id_time).html();
-	var time = SinceMondayTimerJquery.timerGetTime(last_restart,0,debug);
+	var time_string_was = document.getElementById(element_id_time).innerHTML;
+	var time = SinceMondayTimerJquery.timerGetTime(last_restart, 0, debug);
 	var items = '';
 	if (nonformat == 0) {
 	  items+='<center>';
@@ -149,7 +170,7 @@ SinceMondayTimerJquery.timerShowTime = function(last_restart,element_id_time, no
 	  items+=time[0]+' '+time[1]+' '+time[2]+' '+time[3];
 	}
 	if (time_string_was != items) {
-	  $(element_id_time).html(items);
+	  document.getElementById(element_id_time).innerHTML = items;
 	}
 }
 
@@ -159,8 +180,6 @@ SinceMondayTimerJquery.timerGetTime = function(last_restart, format, debug) {
 	var date_1 = new Date();
 	var date_2 = new Date(last_restart * 1000);
 	var time = Array(4);
-	//console.log('time_now: '+time_now[0]+' '+time_now[1]+' '+time_now[2]+' '+time_now[3]+' '+time_now[4]+' '+time_now[5]);
-	//console.log('time_restart: '+time_restart[0]+' '+time_restart[1]+' '+time_restart[2]+' '+time_restart[3]+' '+time_restart[4]+' '+time_restart[5]);
 	if ( date_1.getTime() > date_2.getTime() ) { // last_restart is in future
 	  date_1 = date_2;
 	  date_2 = new Date();
@@ -266,13 +285,13 @@ SinceMondayTimerJquery.timerGetTime = function(last_restart, format, debug) {
 	return time;
 }
 
-SinceMondayTimerJquery.timerTwitterButtonHref = function(element_id,url,owner_name,name,last_restart) {
+SinceMondayTimerJquery.timerTwitterButtonHref = function(element_id, url,owner_name, name, last_restart) {
 	url = url || '';
 	owner_name = owner_name || '';
 	name = name || '';
 	last_restart = last_restart || 0;
 	var items='';
-	var items_was = $(element_id).attr("href");
+	var items_was = document.getElementById(element_id).getAttribute('href');
 	var time = SinceMondayTimerJquery.timerGetTime(last_restart);
 	items+='https://twitter.com/share?url='+url+'&text=';
 	if (owner_name != '') {
@@ -284,21 +303,17 @@ SinceMondayTimerJquery.timerTwitterButtonHref = function(element_id,url,owner_na
 	}
 	items+='&hashtags=sincemo';
 	if (items_was != items) {
-	  $(element_id).attr("href",items);
+	  document.getElementById(element_id).setAttribute('href', items);
 	}
 }
 
-SinceMondayTimerJquery.timerRestart = function(id,element_id,stop_timer) {
+SinceMondayTimerJquery.timerRestart = function(id, element_id, stop_timer) {
+	var element = document.getElementById(element_id);
 	clearInterval(stop_timer);
-	$(element_id).addClass("sincemonday-loading");
-	$.ajax({
-	  url: '/t/'+id+'/restart',
-	  dataType: 'json',
-	  type: 'GET',
-	  success: function (data) {
-	    $(element_id).removeClass("sincemonday-loading");
-	    SinceMondayTimerJquery.timerShow(id,element_id);
-	  }
+	SinceMondayTimerJquery.addClass(element, 'sincemonday-loading');
+	SinceMondayTimerJquery.restartTimerXMLHTTP(id, function(data) {
+		SinceMondayTimerJquery.removeClass(element, 'sincemonday-loading');
+	    SinceMondayTimerJquery.showTimerFromData(element, data);
 	});
 } 
 
@@ -449,11 +464,11 @@ SinceMondayTimerJquery.createCSSSelector('.sincemonday-well', 'background-color:
 
 SinceMondayTimerJquery.init = function() {
 	elements = SinceMondayTimerJquery.getElementByClass('sincemonday-timer');
-	elements.forEach(function(e) {
-		timer_id = e.getAttribute('data-id');
+	elements.forEach(function(element) {
+		timer_id = element.getAttribute('data-id');
 		element_id = 'sincemonday-counter' + timer_id;
-		e.setAttribute('id', element_id);
-		SinceMondayTimerJquery.timerShow(timer_id, element_id, e);
+		element.setAttribute('id', element_id);
+		SinceMondayTimerJquery.timerShow(timer_id, element_id, element);
 	});
 }
 

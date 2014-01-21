@@ -380,6 +380,43 @@ timerApp
 		$scope.getUrl = function () {
 			return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
 		}
+	}])
+	.controller('embedModalController', ['$scope', '$modal', function($scope, $modal) {
+		$scope.open = function() {
+			var modalInstance = $modal.open({
+				template: '' +
+					'<div class="modal-dialog">' +
+					  '<div class="modal-content">' +
+					  '<div class="modal-header">' +
+						  '<button type="button" class="close" ng-click="cancel()">&times;</button>' +
+						  '<h4 class="modal-title">Embedding</h4>' +
+						'</div>' +
+						'<div class="modal-body">' +
+						  '<div><h3>&lt;HEAD&gt;</h3>{{timerId}}</div>' +
+						'</div>' +
+						'<!--<div class="modal-footer">-->' +
+						  '<!--<button type="button" class="btn btn-default" ng-click="cancel()">Close</button>-->' +
+						  '<!--<button type="button" class="btn btn-primary" ng-click="ok()">Save changes</button>-->' +
+						'<!--</div>-->' +
+					  '</div><!-- /.modal-content -->' +
+					'</div><!-- /.modal-dialog -->',
+				controller: 'embedModalInstanceController',
+				resolve: {
+					timerId: function () {
+						return $scope.timer.id;
+					}
+				}
+			});
+		};
+	}])
+	.controller('embedModalInstanceController', ['$scope', '$modalInstance', 'timerId', function($scope, $modalInstance, timerId) {
+		$scope.timerId = timerId;
+		$scope.ok = function() {
+			$modalInstance.close();
+		}
+		$scope.cancel = function() {
+			$modalInstance.dismiss('cancel');
+		}
 	}]);
 
 /***
@@ -645,6 +682,7 @@ timerApp
 					'<div ng-if="!timer.denied && timer.set" ng-hide="editor" class=""><center>' + 
 						'<a class="btn btn-danger" ng-if="timer.can_edit || timer.id == 0" ng-click="restart()"><i class="icon-white icon-repeat"></i> Сброс</a>' + 
 						' <a ng-if="timer.public == 1" timer-twitter-link></a>' +
+						' <span ng-controller="embedModalController"><a ng-if="timer.public == 1" class="btn" ng-click="open()">&lt;/&gt;</a></span>' +
 						' <a class="btn" ng-if="timer.can_edit" ng-click="edit()">&nbsp;<i class="icon-pencil"></i>&nbsp;</a>' +
 					'</center></div>' +
 					/* Timer denied */
@@ -737,7 +775,7 @@ timerApp
 			},
 			controller: 'timerTimeController',
 			template: '' +
-				'<div><center>' +
+				'<div title="{{lastRestart*1000|date:\'yyyy-MM-dd HH:mm:ss\'}}"><center>' +
 					'<p><center>' +
 						'<h1>{{time.0}}<small> {{time.1}} {{time.2}} {{time.3}}</small></h1>' +
 					'</center></p>' +
