@@ -380,8 +380,10 @@ timerApp
 		$scope.getUrl = function () {
 			return $location.protocol() + '://' + $location.host() + ($scope.timer && $scope.timer.owner_name ? '/u/' + $scope.timer.owner_name : '');
 		}
+		
+		$scope.sMurl = $location.protocol() + '://' + $location.host();
 	}])
-	.controller('embedModalController', ['$scope', '$modal', function($scope, $modal) {
+	.controller('embedModalController', ['$scope', '$modal', '$location', function($scope, $modal, $location) {
 		$scope.open = function() {
 			var modalInstance = $modal.open({
 				template: '' +
@@ -392,7 +394,8 @@ timerApp
 						  '<h4 class="modal-title">Embedding</h4>' +
 						'</div>' +
 						'<div class="modal-body">' +
-						  '<div><h3>&lt;HEAD&gt;</h3>{{timerId}}</div>' +
+						  '<div><h3>To &lt;HEAD&gt;</h3><pre>&lt;script type="text/javascript" src="{{sMurl}}/js/jsDate.js"&gt;&lt;/script&gt;<br />&lt;script type="text/javascript" src="{{sMurl}}/js/timer-show.js"&gt;&lt;/script&gt;</pre></div>' +
+						  '<div><h3>To &lt;BODY&gt;</h3><pre>&lt;div class="sincemonday-timer" data-id="{{timerId}}"&gt;&lt;/div&gt;</pre></div>' +
 						'</div>' +
 						'<!--<div class="modal-footer">-->' +
 						  '<!--<button type="button" class="btn btn-default" ng-click="cancel()">Close</button>-->' +
@@ -404,13 +407,17 @@ timerApp
 				resolve: {
 					timerId: function () {
 						return $scope.timer.id;
+					},
+					sMurl: function () {
+						return $scope.sMurl;
 					}
 				}
 			});
 		};
 	}])
-	.controller('embedModalInstanceController', ['$scope', '$modalInstance', 'timerId', function($scope, $modalInstance, timerId) {
+	.controller('embedModalInstanceController', ['$scope', '$modalInstance', 'timerId', 'sMurl', function($scope, $modalInstance, timerId, sMurl) {
 		$scope.timerId = timerId;
+		$scope.sMurl = sMurl;
 		$scope.ok = function() {
 			$modalInstance.close();
 		}
