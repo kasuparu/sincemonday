@@ -2,7 +2,7 @@ var SinceMondayTimerJquery = function(opts) {
 	
 }
 
-SinceMondayTimerJquery.url = 'http://local.sincemonday.net:3000';
+SinceMondayTimerJquery.url = 'http://dev.sincemonday.net';
 
 SinceMondayTimerJquery.getElementByClass = function(className, parent) {
   parent || (parent = document);
