@@ -394,8 +394,8 @@ timerApp
 						  '<h4 class="modal-title">Embedding</h4>' +
 						'</div>' +
 						'<div class="modal-body">' +
-						  '<div><h3>To &lt;HEAD&gt;</h3><pre>&lt;script type="text/javascript" src="{{sMurl}}/js/jsDate.js"&gt;&lt;/script&gt;<br />&lt;script type="text/javascript" src="{{sMurl}}/js/timer-show.js"&gt;&lt;/script&gt;</pre></div>' +
-						  '<div><h3>To &lt;BODY&gt;</h3><pre>&lt;div class="sincemonday-timer" data-id="{{timerId}}"&gt;&lt;/div&gt;</pre></div>' +
+						  '<div><h3>Sites with full access</h3><p>To &lt;HEAD&gt;</p><pre>&lt;script type="text/javascript" src="{{sMurl}}/js/jsDate.js"&gt;&lt;/script&gt;<br />&lt;script type="text/javascript" src="{{sMurl}}/js/timer-show.js"&gt;&lt;/script&gt;</pre><p>To &lt;BODY&gt;</p><pre>&lt;div class="sincemonday-timer" data-id="{{timerId}}"&gt;&lt;/div&gt;</pre></div>' +
+						  '<div><h3>Wordpress</h3><p>Your theme (hope it\'s the child one) functions.php, between &lt;?php and ?&gt;</p><pre>// [sincemonday_js]<br />function sincemonday_js_func() {<br />    echo \'&lt;script type="text/javascript" src="http://dev.sincemonday.net/js/jsDate.js"&gt;&lt;/script&gt;&lt;script type="text/javascript" src="http://dev.sincemonday.net/js/timer-show.js"&gt;&lt;/script&gt;\';<br />}<br />add_shortcode(\'sincemonday_js\', \'sincemonday_js_func\');</pre><p>To post, once for all timers</p><pre>[sincemonday_js]</pre><p>To post, this particular timer, in HTML editor</p><pre>&lt;div class="sincemonday-timer" data-id="{{timerId}}"&gt;&lt;/div&gt;</pre></div>' +
 						'</div>' +
 						'<!--<div class="modal-footer">-->' +
 						  '<!--<button type="button" class="btn btn-default" ng-click="cancel()">Close</button>-->' +
