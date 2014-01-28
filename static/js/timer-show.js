@@ -326,7 +326,7 @@ SinceMondayTimerJquery.createCSSSelector = function(selector, style) {
         return;
     }
 
-    var stylesheet;
+    var styleSheet;
     var mediaType;
     if(document.styleSheets.length > 0) {
         for( i = 0; i < document.styleSheets.length; i++) {
@@ -386,81 +386,81 @@ SinceMondayTimerJquery.createCSSSelector = function(selector, style) {
             }
         }
 
-        styleSheet.insertRule(selector + "{" + style + "}", 0);
+        styleSheet.insertRule(selector + "{" + style + "}", styleSheet.cssRules.length);
     }
 }
 
-SinceMondayTimerJquery.createCSSSelector('h1 small.sincemonday-small', 'font-weight: normal; line-height: 1; color: #999999;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-thumbs-up', 'background-position: -96px -144px;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-thumbs-down', 'background-position: -120px -144px;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-adjust', 'background-position: -48px -72px;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-eye-open', 'background-position: -96px -120px;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-eye-close', 'background-position: -120px -120px;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-repeat', 'background-position: -216px -24px;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-white', 'background-image: url("http://sincemonday.net/plusstrap/docs/assets/img/glyphicons-halflings-white.png");');
-
-SinceMondayTimerJquery.createCSSSelector('[class^="sincemonday-icon-"], [class*=" sincemonday-icon-"]', 'display: inline-block; width: 14px; height: 14px; *margin-right: .3em; line-height: 14px; vertical-align: text-top; background-image: url("http://sincemonday.net/plusstrap/docs/assets/img/glyphicons-halflings.png"); background-position: 14px 14px; background-repeat: no-repeat;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse:focus, .sincemonday-btn-danger:focus', '-webkit-box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5); -moz-box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5); outline: none;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse', 'color: #ffffff; text-shadow: 0 1px 0 #373337; background-color: #535154; background-image: -moz-linear-gradient(top, #555555, #514b52); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#555555), to(#514b52)); background-image: -webkit-linear-gradient(top, #555555, #514b52); background-image: -o-linear-gradient(top, #555555, #514b52); background-image: linear-gradient(to bottom, #555555, #514b52); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#ff555555\', endColorstr=\'#ff514b52\', GradientType=0); border-color: #443f45; *background-color: #514b52; filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse:not(.active):hover', 'background-color: #554e56; background-image: -moz-linear-gradient(top, #59525a, #4e494f); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#59525a), to(#4e494f)); background-image: -webkit-linear-gradient(top, #59525a, #4e494f); background-image: -o-linear-gradient(top, #59525a, #4e494f); background-image: linear-gradient(to bottom, #59525a, #4e494f); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#ff59525a\', endColorstr=\'#ff4e494f\', GradientType=0);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse:hover, .sincemonday-btn-inverse:active, .sincemonday-btn-inverse.active, .sincemonday-btn-inverse.disabled, .sincemonday-btn-inverse[disabled]', 'color: #ffffff; background-color: #4e494f; *background-color: #443f45; -webkit-box-shadow: 0 1px 0px #dedede; -moz-box-shadow: 0 1px 0px #dedede; box-shadow: 0 1px 0px #dedede; border-color: #2a262a;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse:active, .sincemonday-btn-inverse.active', 'background-color: #373337 \9; -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-danger', 'color: #ffffff; text-shadow: 0 1px 0 #ad3727; background-color: #d84a38; background-image: -moz-linear-gradient(top, #dd4b39, #d14836); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#dd4b39), to(#d14836)); background-image: -webkit-linear-gradient(top, #dd4b39, #d14836); background-image: -o-linear-gradient(top, #dd4b39, #d14836); background-image: linear-gradient(to bottom, #dd4b39, #d14836); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#ffdd4b39\', endColorstr=\'#ffd14836\', GradientType=0); border-color: #c13e2c; *background-color: #d14836; filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-danger:not(.active):hover', 'background-color: #d24d3c; background-image: -moz-linear-gradient(top, #d45342, #d04432); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#d45342), to(#d04432)); background-image: -webkit-linear-gradient(top, #d45342, #d04432); background-image: -o-linear-gradient(top, #d45342, #d04432); background-image: linear-gradient(to bottom, #d45342, #d04432); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#ffd45342\', endColorstr=\'#ffd04432\', GradientType=0);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-danger:hover, .sincemonday-btn-danger:active, .sincemonday-btn-danger.active, .sincemonday-btn-danger.disabled, .sincemonday-btn-danger[disabled]', 'color: #ffffff; background-color: #d04432; *background-color: #c13e2c; -webkit-box-shadow: 0 1px 0px #dedede; -moz-box-shadow: 0 1px 0px #dedede; box-shadow: 0 1px 0px #dedede; border-color: #983023;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-danger:active, .sincemonday-btn-danger.active', 'background-color: #ad3727 \9; -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn', 'display: inline-block; *display: inline; *zoom: 1; padding: 0px 8px; font-weight: bold; margin-bottom: 0; font-size: 11px; line-height: 22px; *line-height: 22px; text-align: center; vertical-align: middle; cursor: default; color: #333333; text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75); background-color: #f3f3f3; background-image: -moz-linear-gradient(top, #f5f5f5, #f1f1f1); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#f1f1f1)); background-image: -webkit-linear-gradient(top, #f5f5f5, #f1f1f1); background-image: -o-linear-gradient(top, #f5f5f5, #f1f1f1); background-image: linear-gradient(to bottom, #f5f5f5, #f1f1f1); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#fff5f5f5\', endColorstr=\'#fff1f1f1\', GradientType=0); border-color: #e4e4e4; *background-color: #f1f1f1; filter: progid:DXImageTransform.Microsoft.gradient(enabled = false); border: 1px solid rgba(0, 0, 0, 0.1); *border: 0; border-bottom-color: rgba(0, 0, 0, 0.1); -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px; *margin-left: .3em; border-color: #c5c5c5; border-color: rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0.25);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:not(.active):hover', 'background-color: #f5f5f5; background-image: -moz-linear-gradient(top, #f9f9f9, #eeeeee); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f9f9f9), to(#eeeeee)); background-image: -webkit-linear-gradient(top, #f9f9f9, #eeeeee); background-image: -o-linear-gradient(top, #f9f9f9, #eeeeee); background-image: linear-gradient(to bottom, #f9f9f9, #eeeeee); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#fff9f9f9\', endColorstr=\'#ffeeeeee\', GradientType=0);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:hover, .sincemonday-btn:active, .sincemonday-btn.active, .sincemonday-btn.disabled, .sincemonday-btn[disabled]', 'color: #333333; background-color: #eeeeee; *background-color: #e4e4e4; -webkit-box-shadow: 0 1px 0px #dedede; -moz-box-shadow: 0 1px 0px #dedede; box-shadow: 0 1px 0px #dedede; border-color: #cbcbcb;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:active, .sincemonday-btn.active', 'background-color: #d8d8d8 \9; -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:first-child', '*margin-left: 0;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:hover', 'color: #333333; text-decoration: none; background-color: #e6e6e6; *background-color: #d9d9d9; -webkit-transition: background-position 0.1s linear; -moz-transition: background-position 0.1s linear; -o-transition: background-position 0.1s linear; transition: background-position 0.1s linear;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:focus', 'outline: thin dotted #333; outline: 5px auto -webkit-focus-ring-color; outline-offset: -2px;');
-
-
-// Timer CSS classes
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-timer', 'position: relative; max-width: 500px; color: #333333; font-family: Arial,sans-serif; font-size: 13px; line-height: 20px;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-timer-good', '-moz-box-shadow: 0 0 10px rgba(45,159,12,0.7); -webkit-box-shadow: 0 0 10px rgba(45,159,12,0.7); box-shadow: 0 0 10px rgba(45,159,12,0.7);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-timer-bad', '-moz-box-shadow: 0 0 10px rgba(246,62,12,0.7); -webkit-box-shadow: 0 0 10px rgba(246,62,12,0.7); box-shadow: 0 0 10px rgba(246,62,12,0.7);');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-timer-neutral', '-moz-box-shadow: 0 0 10px rgba(192,192,192,0.7); -webkit-box-shadow: 0 0 10px rgba(192,192,192,0.7); box-shadow: 0 0 10px rgba(192,192,192,0.7);');
-
-SinceMondayTimerJquery.createCSSSelector('div.sincemonday-timer > div.sincemonday-icon-public', 'position: absolute; right: 5px; top: 4px;');
-
-SinceMondayTimerJquery.createCSSSelector('div.sincemonday-timer > div.sincemonday-icon-good', 'position: absolute; right: 22px; top: 4px;');
-
-SinceMondayTimerJquery.createCSSSelector('div.sincemonday-timer > div.sincemonday-icon-name', 'font-size: 80%; position: absolute; left: 5px; top: 4px;');
-
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-loading', 'background-image: url("http://sincemonday.net/loading.gif"); background-repeat: no-repeat; background-position: center center;');
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-well', 'background-color: #F5F5F5; border: 1px solid #E3E3E3; border-radius: 2px; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset; margin-bottom: 20px; min-height: 20px; padding: 19px;');
 
 SinceMondayTimerJquery.createCSSSelector('.sincemonday-a', 'color: #4d90fe; text-decoration: none;');
 
-SinceMondayTimerJquery.createCSSSelector('.sincemonday-well', 'background-color: #F5F5F5; border: 1px solid #E3E3E3; border-radius: 2px; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset; margin-bottom: 20px; min-height: 20px; padding: 19px;');
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-loading', 'background-image: url("http://sincemonday.net/loading.gif"); background-repeat: no-repeat; background-position: center center;');
+
+SinceMondayTimerJquery.createCSSSelector('div.sincemonday-timer > div.sincemonday-icon-name', 'font-size: 80%; position: absolute; left: 5px; top: 4px;');
+
+SinceMondayTimerJquery.createCSSSelector('div.sincemonday-timer > div.sincemonday-icon-good', 'position: absolute; right: 22px; top: 4px;');
+
+SinceMondayTimerJquery.createCSSSelector('div.sincemonday-timer > div.sincemonday-icon-public', 'position: absolute; right: 5px; top: 4px;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-timer-neutral', '-moz-box-shadow: 0 0 10px rgba(192,192,192,0.7); -webkit-box-shadow: 0 0 10px rgba(192,192,192,0.7); box-shadow: 0 0 10px rgba(192,192,192,0.7);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-timer-bad', '-moz-box-shadow: 0 0 10px rgba(246,62,12,0.7); -webkit-box-shadow: 0 0 10px rgba(246,62,12,0.7); box-shadow: 0 0 10px rgba(246,62,12,0.7);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-timer-good', '-moz-box-shadow: 0 0 10px rgba(45,159,12,0.7); -webkit-box-shadow: 0 0 10px rgba(45,159,12,0.7); box-shadow: 0 0 10px rgba(45,159,12,0.7);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-timer', 'position: relative; max-width: 500px; color: #333333; font-family: Arial,sans-serif; font-size: 13px; line-height: 20px;');
+// Timer CSS classes
+
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:focus', 'outline: thin dotted #333; outline: 5px auto -webkit-focus-ring-color; outline-offset: -2px;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:hover', 'color: #333333; text-decoration: none; background-color: #e6e6e6; *background-color: #d9d9d9; -webkit-transition: background-position 0.1s linear; -moz-transition: background-position 0.1s linear; -o-transition: background-position 0.1s linear; transition: background-position 0.1s linear;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:first-child', '*margin-left: 0;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:active, .sincemonday-btn.active', 'background-color: #d8d8d8 \9; -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:hover, .sincemonday-btn:active, .sincemonday-btn.active, .sincemonday-btn.disabled, .sincemonday-btn[disabled]', 'color: #333333; background-color: #eeeeee; *background-color: #e4e4e4; -webkit-box-shadow: 0 1px 0px #dedede; -moz-box-shadow: 0 1px 0px #dedede; box-shadow: 0 1px 0px #dedede; border-color: #cbcbcb;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn:not(.active):hover', 'background-color: #f5f5f5; background-image: -moz-linear-gradient(top, #f9f9f9, #eeeeee); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f9f9f9), to(#eeeeee)); background-image: -webkit-linear-gradient(top, #f9f9f9, #eeeeee); background-image: -o-linear-gradient(top, #f9f9f9, #eeeeee); background-image: linear-gradient(to bottom, #f9f9f9, #eeeeee); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#fff9f9f9\', endColorstr=\'#ffeeeeee\', GradientType=0);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn', 'display: inline-block; *display: inline; *zoom: 1; padding: 0px 8px; font-weight: bold; margin-bottom: 0; font-size: 11px; line-height: 22px; *line-height: 22px; text-align: center; vertical-align: middle; cursor: default; color: #333333; text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75); background-color: #f3f3f3; background-image: -moz-linear-gradient(top, #f5f5f5, #f1f1f1); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#f1f1f1)); background-image: -webkit-linear-gradient(top, #f5f5f5, #f1f1f1); background-image: -o-linear-gradient(top, #f5f5f5, #f1f1f1); background-image: linear-gradient(to bottom, #f5f5f5, #f1f1f1); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#fff5f5f5\', endColorstr=\'#fff1f1f1\', GradientType=0); border-color: #e4e4e4; *background-color: #f1f1f1; filter: progid:DXImageTransform.Microsoft.gradient(enabled = false); border: 1px solid rgba(0, 0, 0, 0.1); *border: 0; border-bottom-color: rgba(0, 0, 0, 0.1); -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px; *margin-left: .3em; border-color: #c5c5c5; border-color: rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0.25);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-danger:active, .sincemonday-btn-danger.active', 'background-color: #ad3727 \9; -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-danger:hover, .sincemonday-btn-danger:active, .sincemonday-btn-danger.active, .sincemonday-btn-danger.disabled, .sincemonday-btn-danger[disabled]', 'color: #ffffff; background-color: #d04432; *background-color: #c13e2c; -webkit-box-shadow: 0 1px 0px #dedede; -moz-box-shadow: 0 1px 0px #dedede; box-shadow: 0 1px 0px #dedede; border-color: #983023;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-danger:not(.active):hover', 'background-color: #d24d3c; background-image: -moz-linear-gradient(top, #d45342, #d04432); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#d45342), to(#d04432)); background-image: -webkit-linear-gradient(top, #d45342, #d04432); background-image: -o-linear-gradient(top, #d45342, #d04432); background-image: linear-gradient(to bottom, #d45342, #d04432); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#ffd45342\', endColorstr=\'#ffd04432\', GradientType=0);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-danger', 'color: #ffffff; text-shadow: 0 1px 0 #ad3727; background-color: #d84a38; background-image: -moz-linear-gradient(top, #dd4b39, #d14836); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#dd4b39), to(#d14836)); background-image: -webkit-linear-gradient(top, #dd4b39, #d14836); background-image: -o-linear-gradient(top, #dd4b39, #d14836); background-image: linear-gradient(to bottom, #dd4b39, #d14836); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#ffdd4b39\', endColorstr=\'#ffd14836\', GradientType=0); border-color: #c13e2c; *background-color: #d14836; filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse:active, .sincemonday-btn-inverse.active', 'background-color: #373337 \9; -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .2);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse:hover, .sincemonday-btn-inverse:active, .sincemonday-btn-inverse.active, .sincemonday-btn-inverse.disabled, .sincemonday-btn-inverse[disabled]', 'color: #ffffff; background-color: #4e494f; *background-color: #443f45; -webkit-box-shadow: 0 1px 0px #dedede; -moz-box-shadow: 0 1px 0px #dedede; box-shadow: 0 1px 0px #dedede; border-color: #2a262a;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse:not(.active):hover', 'background-color: #554e56; background-image: -moz-linear-gradient(top, #59525a, #4e494f); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#59525a), to(#4e494f)); background-image: -webkit-linear-gradient(top, #59525a, #4e494f); background-image: -o-linear-gradient(top, #59525a, #4e494f); background-image: linear-gradient(to bottom, #59525a, #4e494f); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#ff59525a\', endColorstr=\'#ff4e494f\', GradientType=0);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse', 'color: #ffffff; text-shadow: 0 1px 0 #373337; background-color: #535154; background-image: -moz-linear-gradient(top, #555555, #514b52); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#555555), to(#514b52)); background-image: -webkit-linear-gradient(top, #555555, #514b52); background-image: -o-linear-gradient(top, #555555, #514b52); background-image: linear-gradient(to bottom, #555555, #514b52); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\'#ff555555\', endColorstr=\'#ff514b52\', GradientType=0); border-color: #443f45; *background-color: #514b52; filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-btn-inverse:focus, .sincemonday-btn-danger:focus', '-webkit-box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5); -moz-box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5); outline: none;');
+
+SinceMondayTimerJquery.createCSSSelector('[class^="sincemonday-icon-"], [class*=" sincemonday-icon-"]', 'display: inline-block; width: 14px; height: 14px; *margin-right: .3em; line-height: 14px; vertical-align: text-top; background-image: url("http://sincemonday.net/plusstrap/docs/assets/img/glyphicons-halflings.png"); background-position: 14px 14px; background-repeat: no-repeat;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-white', 'background-image: url("http://sincemonday.net/plusstrap/docs/assets/img/glyphicons-halflings-white.png");');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-repeat', 'background-position: -216px -24px;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-eye-close', 'background-position: -120px -120px;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-eye-open', 'background-position: -96px -120px;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-adjust', 'background-position: -48px -72px;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-thumbs-down', 'background-position: -120px -144px;');
+
+SinceMondayTimerJquery.createCSSSelector('.sincemonday-icon-thumbs-up', 'background-position: -96px -144px;');
+
+SinceMondayTimerJquery.createCSSSelector('h1 small.sincemonday-small', 'font-weight: normal; line-height: 1; color: #999999;');
 
 SinceMondayTimerJquery.init = function() {
 	elements = SinceMondayTimerJquery.getElementByClass('sincemonday-timer');
