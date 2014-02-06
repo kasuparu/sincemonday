@@ -1015,7 +1015,7 @@ timerApp
 					'\'relationship-following\': relationship.following && !relationship.followed_by,' +
 					'\'relationship-followed-by\': !relationship.following && relationship.followed_by' +
 				'}">' +
-					'<td><a class="black-link" ng-href="https://twitter.com/{{relationship.screen_name}}" target="_blank"><img class="mr5" width="24" ng-if="relationship.profile_image_url_https" ng-src="{{relationship.profile_image_url_https}}" /><strong>{{relationship.screen_name}}</strong></a></td>' +
+					'<td><a class="black-link" ng-href="https://twitter.com/{{relationship.screen_name}}" target="_blank"><img class="mr5" width="24" ng-if="relationship.profile_image_url_https" ng-src="{{relationship.profile_image_url_https}}" /><strong>{{relationship.screen_name}}</strong></a><a ng-if="relationship.member" ng-href="#!/u/{{relationship.screen_name}}" class="ml5">&nbsp;<i class="icon-user"></i>&nbsp;</a></td>' +
 					'<td><span>{{relationship.friends_count}}</span></td>' +
 					'<td><span>{{relationship.followers_count}}</span></td>' +
 					'<td><span yes-no-icon="relationship.following"></span></td>' +

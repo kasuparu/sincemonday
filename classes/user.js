@@ -318,7 +318,6 @@ User.prototype.updateTwitterFriendsAndFollowers = function(id, accessToken, acce
 								friends_count: user.friends_count,
 								followers_count: user.followers_count,
 								profile_image_url_https: user.profile_image_url_https,
-								// TODO: member: IS_SINCEMONDAY_MEMBER
 							});
 						}
 					});
@@ -344,11 +343,33 @@ User.prototype.updateTwitterFriendsAndFollowers = function(id, accessToken, acce
 		_MongoDB.MongoClient.connect(_cfg.mongo.uri + '/' + _cfg.mongo.db + (_cfg.mongo.options || ''), function(err, db) {
 			if (err) return callback(err, null);
 			
-			db.collection('users').findAndModify({id: id}, {}, {$set: {relationships: relationships, relationships_timestamp: Math.round(new Date().getTime() / 1000)}}, {safe: true, new: true}, function(err, user) {
-				if (err) return callback(err, null);
-				callback(err, user);
-				db.close();
+			// Enrich relationships with IS_SINCEMONDAY_MEMBER
+			relationshipsIds = relationships.map(function(e) {
+				return e.id;
 			});
+			
+			var cursor = db.collection('users').find({id: {'$in': relationshipsIds}}, {id: 1});
+			cursor.each(function(err, user) {
+				if (!err && user) {
+					relationships.forEach(function(e) {
+						if (e.id == user.id) {
+							//console.log('user ' + e.id + ' is SM member');
+							e.member = 1;
+						}
+					});
+				}
+				if (user == null) {
+					
+					// Save user relationships
+					db.collection('users').findAndModify({id: id}, {}, {$set: {relationships: relationships, relationships_timestamp: Math.round(new Date().getTime() / 1000)}}, {safe: true, new: true}, function(err, user) {
+						if (err) return callback(err, null);
+						callback(err, user);
+						db.close();
+					});
+				}
+			});
+			
+			
 		});
 	};
 	
